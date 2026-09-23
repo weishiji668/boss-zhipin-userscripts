@@ -1025,10 +1025,10 @@ function check(name, cond, extra){
         const py = [
           'import openpyxl,json,sys',
           'wb=openpyxl.load_workbook(sys.argv[1])',
-          "ws=wb['规则']",
+          "ws=wb['⑨ 表格规则（高级）']",
           "print(json.dumps({'sheets':wb.sheetnames,'header':[c.value for c in ws[1]],'row2':[c.value for c in ws[2]],"+
           "'widths':[ws.column_dimensions[chr(65+i)].width for i in range(7)],'validations':len(ws.data_validations.dataValidation),"+
-          "'freeze':ws.freeze_panes,'explain':wb['说明'].max_row},ensure_ascii=False))"
+          "'freeze':ws.freeze_panes,'explain':wb['① 说明'].max_row},ensure_ascii=False))"
         ].join('\n');
         info = JSON.parse(execFileSync('python', ['-c', py, out], { encoding:'utf8', env: Object.assign({}, process.env, { PYTHONIOENCODING:'utf-8' }) }));
       }catch(e){
@@ -1042,11 +1042,11 @@ function check(name, cond, extra){
         check('xlsx 结构校验需要 python + openpyxl', false, info.error);
       } else {
         check('openpyxl 能正常打开（不是坏文件）', !!info && !info.error, JSON.stringify(info).slice(0,200));
-        check('两个工作表：规则 + 说明', info.sheets && info.sheets[0]==='规则' && info.sheets[1]==='说明', JSON.stringify(info.sheets));
+        check('模板改成「一表对一框」共 10 张表', info.sheets && info.sheets.length===10 && info.sheets.indexOf('⑨ 表格规则（高级）')>=0 && info.sheets.some(s=>String(s).indexOf('⑩ 字段对照')===0), JSON.stringify(info.sheets));
         check('表头正确', info.header && info.header.join(',')==='类型,字段,匹配,值,动作,启用,备注', JSON.stringify(info.header));
         check('设置了列宽', info.widths && info.widths[3]>=20, JSON.stringify(info.widths));
         check('冻结首行 + 5 组下拉', info.freeze==='A2' && info.validations===5, 'freeze='+info.freeze+' validations='+info.validations);
-        check('说明页有内容', info.explain>=8, 'rows='+info.explain);
+        check('说明页有内容', info.explain>=3, 'rows='+info.explain);
       }
     }
     await ctxT.close();
