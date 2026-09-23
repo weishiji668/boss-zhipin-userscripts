@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name         BOSS直聘 · 页面过滤（垃圾岗位直接隐藏）
 // @namespace    local.boss-filter
-// @version      1.3.3
-// @description  在职位列表页把不想要的岗位直接隐藏：三层排除词（绝对 = 命中即隐藏；卡片 = 只看列表卡片上的字段；详情 = 只看岗位详情正文，需先取到详情）+ 薪资范围（月薪下限/上限、日薪下限、面议可选）。v1.2.0 起在卡片上点右键就能「隐藏这条岗位 / 把选中的词加进排除词 / 公司进黑名单」。规则可在页面上随时改。默认不发请求；「补取详情」要你手动勾选并点按钮才发。v1.2.3：修「隐藏看过的岗位」一直不生效（时间戳在判定前就被刷新）+ 补上「N 天内」上限；修「恢复默认」被导入数据污染（第二次恢复不干净）；「显示被过滤」模式下重复推荐卡也标红不隐藏；安全阀自动恢复不再放出右键隐藏的卡；清理已离开页面的临时隐藏卡引用。v1.2.4：修改完规则后面板输入框被重绘前的旧值盖回（加词/加黑名单/导入/恢复默认）；修右键把列表页非卡片的 li（下拉/导航/消息）误当卡片拦截原生菜单；修「薪资 小于/大于」把日薪时薪当低月薪误藏；修恢复默认漏掉的 4 个数字框；修 JD 详情缓存只增不减（补 TTL 清理）；修「不包含」在字段取不到值时于空串恒真误藏；修自动保存与保存按钮提示被面板重绘吞掉；修安全阀每 2 秒重复「先隐藏再恢复」白写 DOM；修 Vue 状态缓存每轮失效重建；修找卡 O(n²) 去重。v1.2.5：修「详情工作地址取到后，地点黑名单的卡片命中就失效」——卡片文字与详情工作地址改为双源并列，任一命中即隐藏（原因文案区分来源）；隐藏新增协同标记 data-bwf-hide，恢复显示前先看其它脚本的隐藏标记（data-bt-focus / data-bc-hide），都没有才恢复 display，避免与 tag「只看命中」/一致性脚本互撤。v1.2.8：自检——页面有 ≥8 个 li.job-card-box 但 findCards 识别 0 张时，顶部提示条明示一次（可能没渲染完或站点改版换选择器），不再静默失效。v1.2.8：自检——页面有 ≥8 个 li.job-card-box 但 findCards 识别 0 张时，顶部提示条明示一次（可能没渲染完或站点改版换选择器），不再静默失效。v1.2.9（审核修复）：修「整键覆盖规则表」——storage 监听原来只处理详情缓存、不重读规则，两个标签页时后写的那个用启动时的旧快照整键覆盖，把你右键隐藏的岗位、拉黑的公司、刚加的排除词全部抹掉且无提示（岗位一「复活」就重新变成可投状态）；现在写盘前先跟盘上做名单并集合并，storage 事件也重读规则并重跑过滤。修「MutationObserver 自激」——原来只有 applying 一个闸，而 MutationObserver 回调是微任务，等它跑到时 applyFilter 的 finally 早已把 applying 置回 false，闸门形同虚设；于是每轮无条件写 tag.textContent（即使字符串完全相同也会产生 childList 变更记录）→ 触发自己的 observer → 350ms 后再跑一轮 → 永不停止，60 张卡的列表页约每秒 180+ 次强制同步布局，tag 也被拖着重扫 3 轮/秒。现在加静音窗口 + 全部写入改等值判断。修「跨标签页清空攒了几天的详情缓存」——storage 事件把内存缓存掏空却不取消已排队的 800ms 写盘，定时器触发时把空对象写回磁盘（不可逆）；现在先 clearTimeout。修「标记类规则先于薪资判定返回」——模板里默认启用的「在招职位数>100 → 标记」一命中就直接 return，后面的「月薪 < 4000 → 隐藏」永远轮不到，而这些卡恰是人力外包、且 deliver 不认「标记」状态仍会投；现在标记类规则只记下、等所有隐藏判定跑完再采纳。修「卡片文字混进脚本自己画的角标」——判定读 card.innerText 而角标就挂在卡片内，形成「命中→画角标→角标又被当卡片文字→继续命中」的自证循环，命中原因指向卡片上不存在的词；现在克隆后剥掉自家节点再取文字。修「补取详情没有失败冷却、没有超时」——限流时照发满 20 次烧掉当日额度，请求挂住则 jdBusy 永远为 true、按钮静默失效刷新前无法恢复；现在 15 秒超时 + 风控识别（403/429/503/验证页）+ 连续失败 3 次即停并冷却 15 分钟，jdBusy 放 finally 释放。修「右键加词与 800ms 自动保存抢同一个输入框」——你正在输入但还没满 800ms 的词会被静默丢弃而 toast 还显示「已加入」；现在右键加词前先取消排队中的保存并把输入框内容并入。修「AI判定字段全项目没有写入方」——用它写的规则永久空转却仍被算进「表格规则 N 条」；现在命中时明确提示该字段无数据源。修「自检提示条只置不清」+ 同一句话显示两遍。修「恢复默认把今日补取额度与看过记录一起清零」（当日实际可发请求翻倍）。JD 详情缓存上限 1000 条降到 400 条并补总字符数封顶（原上限本身就超过 localStorage 5MB 配额，写盘必失败且被静默吞掉），配额错误不再静默、会减半重试并如实提示。隐藏协同协议补上 insight 的 data-bi-hidden-key。v1.3.0（审核修复）：文案与实际上限对齐——详情正文缓存「最多 3000 条」是旧值，实际是 400 条 / 120 万字符（超出会静默写不进 localStorage）。只改说明文字，行为不变。v1.3.1（审核复核）：修「删除被写盘合并撤销」—— v1.2.9 的「写盘前跟盘上求并集」修好了多标签页互相覆盖，但也把删除一并撤销了：delete cfg.hideIds[id] 之后 saveCfg() 又从盘上把它并回来，于是右键「撤销刚才的隐藏」、面板「恢复」与「清空名单」、删词表、清空表格规则全部静默失效（岗位藏了却放不出来）。现在删除/替换时留墓碑（本次会话内有效），写盘时压过盘上旧条目；数组类字段（已投名单 / 公司·地点黑名单 / 三层词表 / 表格规则）改为按内容求并集，不再用「盘上更长就整表覆盖」这种会复活删除的规则。v1.3.2（用户反馈「详细的过滤没生效」）：修「详情正文被取成了站点的卡片摘要」——内联 JSON 的候选里原来带 description，而卡片摘要的字段名就是它、且通常排在正文之前，于是「XX招聘，薪资：…地点：…要求：…福利：…刚刚在线，随时随地直接开聊。」被当成正文写进缓存（本机实测 18 条里 15 条是这种）：详情排除词永不命中，hasJd() 还认为这些岗位「已取」，再点「补取本页详情」只回「本页岗位都已经取过」。现在内联 JSON 只认 jobDescription / jobDesc，并新增 jdLooksReal 正文可信度校验（摘要签名直接判否 + 要求正文小标题或 ≥300 字；DOM 选择器、DOM 兜底、被动缓存、补取、入库、读出六处统一过闸），启动时清掉缓存里的摘要条目让它们重新进入待取队列；站点验证页（请稍候 / 正在验证等）计入风控冷却。v1.3.3（用户反馈「详细页一次只检测几条，多了就风控，检测不完」）：详情正文不再只能靠补取——① 列表页点一下卡片，右侧本来就会渲染该岗位的详情面板（职位描述/任职要求/工作地址），脚本顺手缓存，零请求；② 页面钩子扩到详情类接口（/wapi/zpgeek/job/detail.json 等），页面自己发的详情响应顺手抄一份，零请求；③ 补取改为优先走 JSON 详情接口（用列表接口里的 securityId+lid，头 Zp_token=cookie bst），失败再回退整页 HTML。同时把面板里的「工作地址」一并缓存（地点黑名单的「工作地址」那一腿不再只依赖监控脚本的镜像）。
+// @version      1.3.4
+// @description  在职位列表页把不想要的岗位直接隐藏：三层排除词（绝对 = 命中即隐藏；卡片 = 只看列表卡片上的字段；详情 = 只看岗位详情正文，需先取到详情）+ 薪资范围（月薪下限/上限、日薪下限、面议可选）。v1.2.0 起在卡片上点右键就能「隐藏这条岗位 / 把选中的词加进排除词 / 公司进黑名单」。规则可在页面上随时改。默认不发请求；「补取详情」要你手动勾选并点按钮才发。v1.2.3：修「隐藏看过的岗位」一直不生效（时间戳在判定前就被刷新）+ 补上「N 天内」上限；修「恢复默认」被导入数据污染（第二次恢复不干净）；「显示被过滤」模式下重复推荐卡也标红不隐藏；安全阀自动恢复不再放出右键隐藏的卡；清理已离开页面的临时隐藏卡引用。v1.2.4：修改完规则后面板输入框被重绘前的旧值盖回（加词/加黑名单/导入/恢复默认）；修右键把列表页非卡片的 li（下拉/导航/消息）误当卡片拦截原生菜单；修「薪资 小于/大于」把日薪时薪当低月薪误藏；修恢复默认漏掉的 4 个数字框；修 JD 详情缓存只增不减（补 TTL 清理）；修「不包含」在字段取不到值时于空串恒真误藏；修自动保存与保存按钮提示被面板重绘吞掉；修安全阀每 2 秒重复「先隐藏再恢复」白写 DOM；修 Vue 状态缓存每轮失效重建；修找卡 O(n²) 去重。v1.2.5：修「详情工作地址取到后，地点黑名单的卡片命中就失效」——卡片文字与详情工作地址改为双源并列，任一命中即隐藏（原因文案区分来源）；隐藏新增协同标记 data-bwf-hide，恢复显示前先看其它脚本的隐藏标记（data-bt-focus / data-bc-hide），都没有才恢复 display，避免与 tag「只看命中」/一致性脚本互撤。v1.2.8：自检——页面有 ≥8 个 li.job-card-box 但 findCards 识别 0 张时，顶部提示条明示一次（可能没渲染完或站点改版换选择器），不再静默失效。v1.2.8：自检——页面有 ≥8 个 li.job-card-box 但 findCards 识别 0 张时，顶部提示条明示一次（可能没渲染完或站点改版换选择器），不再静默失效。v1.2.9（审核修复）：修「整键覆盖规则表」——storage 监听原来只处理详情缓存、不重读规则，两个标签页时后写的那个用启动时的旧快照整键覆盖，把你右键隐藏的岗位、拉黑的公司、刚加的排除词全部抹掉且无提示（岗位一「复活」就重新变成可投状态）；现在写盘前先跟盘上做名单并集合并，storage 事件也重读规则并重跑过滤。修「MutationObserver 自激」——原来只有 applying 一个闸，而 MutationObserver 回调是微任务，等它跑到时 applyFilter 的 finally 早已把 applying 置回 false，闸门形同虚设；于是每轮无条件写 tag.textContent（即使字符串完全相同也会产生 childList 变更记录）→ 触发自己的 observer → 350ms 后再跑一轮 → 永不停止，60 张卡的列表页约每秒 180+ 次强制同步布局，tag 也被拖着重扫 3 轮/秒。现在加静音窗口 + 全部写入改等值判断。修「跨标签页清空攒了几天的详情缓存」——storage 事件把内存缓存掏空却不取消已排队的 800ms 写盘，定时器触发时把空对象写回磁盘（不可逆）；现在先 clearTimeout。修「标记类规则先于薪资判定返回」——模板里默认启用的「在招职位数>100 → 标记」一命中就直接 return，后面的「月薪 < 4000 → 隐藏」永远轮不到，而这些卡恰是人力外包、且 deliver 不认「标记」状态仍会投；现在标记类规则只记下、等所有隐藏判定跑完再采纳。修「卡片文字混进脚本自己画的角标」——判定读 card.innerText 而角标就挂在卡片内，形成「命中→画角标→角标又被当卡片文字→继续命中」的自证循环，命中原因指向卡片上不存在的词；现在克隆后剥掉自家节点再取文字。修「补取详情没有失败冷却、没有超时」——限流时照发满 20 次烧掉当日额度，请求挂住则 jdBusy 永远为 true、按钮静默失效刷新前无法恢复；现在 15 秒超时 + 风控识别（403/429/503/验证页）+ 连续失败 3 次即停并冷却 15 分钟，jdBusy 放 finally 释放。修「右键加词与 800ms 自动保存抢同一个输入框」——你正在输入但还没满 800ms 的词会被静默丢弃而 toast 还显示「已加入」；现在右键加词前先取消排队中的保存并把输入框内容并入。修「AI判定字段全项目没有写入方」——用它写的规则永久空转却仍被算进「表格规则 N 条」；现在命中时明确提示该字段无数据源。修「自检提示条只置不清」+ 同一句话显示两遍。修「恢复默认把今日补取额度与看过记录一起清零」（当日实际可发请求翻倍）。JD 详情缓存上限 1000 条降到 400 条并补总字符数封顶（原上限本身就超过 localStorage 5MB 配额，写盘必失败且被静默吞掉），配额错误不再静默、会减半重试并如实提示。隐藏协同协议补上 insight 的 data-bi-hidden-key。v1.3.0（审核修复）：文案与实际上限对齐——详情正文缓存「最多 3000 条」是旧值，实际是 400 条 / 120 万字符（超出会静默写不进 localStorage）。只改说明文字，行为不变。v1.3.1（审核复核）：修「删除被写盘合并撤销」—— v1.2.9 的「写盘前跟盘上求并集」修好了多标签页互相覆盖，但也把删除一并撤销了：delete cfg.hideIds[id] 之后 saveCfg() 又从盘上把它并回来，于是右键「撤销刚才的隐藏」、面板「恢复」与「清空名单」、删词表、清空表格规则全部静默失效（岗位藏了却放不出来）。现在删除/替换时留墓碑（本次会话内有效），写盘时压过盘上旧条目；数组类字段（已投名单 / 公司·地点黑名单 / 三层词表 / 表格规则）改为按内容求并集，不再用「盘上更长就整表覆盖」这种会复活删除的规则。v1.3.2（用户反馈「详细的过滤没生效」）：修「详情正文被取成了站点的卡片摘要」——内联 JSON 的候选里原来带 description，而卡片摘要的字段名就是它、且通常排在正文之前，于是「XX招聘，薪资：…地点：…要求：…福利：…刚刚在线，随时随地直接开聊。」被当成正文写进缓存（本机实测 18 条里 15 条是这种）：详情排除词永不命中，hasJd() 还认为这些岗位「已取」，再点「补取本页详情」只回「本页岗位都已经取过」。现在内联 JSON 只认 jobDescription / jobDesc，并新增 jdLooksReal 正文可信度校验（摘要签名直接判否 + 要求正文小标题或 ≥300 字；DOM 选择器、DOM 兜底、被动缓存、补取、入库、读出六处统一过闸），启动时清掉缓存里的摘要条目让它们重新进入待取队列；站点验证页（请稍候 / 正在验证等）计入风控冷却。v1.3.3（用户反馈「详细页一次只检测几条，多了就风控，检测不完」）：详情正文不再只能靠补取——① 列表页点一下卡片，右侧本来就会渲染该岗位的详情面板（职位描述/任职要求/工作地址），脚本顺手缓存，零请求；② 页面钩子扩到详情类接口（/wapi/zpgeek/job/detail.json 等），页面自己发的详情响应顺手抄一份，零请求；③ 补取改为优先走 JSON 详情接口（用列表接口里的 securityId+lid，头 Zp_token=cookie bst），失败再回退整页 HTML。同时把面板里的「工作地址」一并缓存（地点黑名单的「工作地址」那一腿不再只依赖监控脚本的镜像）。v1.3.4（用户反馈「地点黑名单我都是写详细地址的 + 这一栏 UI 没做好」）：公司黑名单与地点黑名单改为宽松匹配 —— 两侧的空白与常见分隔符（空格 / 全角空格 / · / 、 / ， / / / - / 括号等）先抹掉再比，写「深圳龙岗区银信中心B座」「荣丰中心A栋」「龙华」都能命中，命中原因显示你自己写的那一条；面板把两栏各加一行加粗标题 + 当前条数、输入框补 placeholder 示例，说明挪到框下面写清「关键词或详细地址都行」。
 // @author       weishiji668
 // @license      MIT
-// @homepageURL  https://github.com/weishiji668/加减乘除boss
-// @supportURL   https://github.com/weishiji668/加减乘除boss/issues
-// @updateURL    https://raw.githubusercontent.com/weishiji668/加减乘除boss/main/boss-filter.user.js
-// @downloadURL  https://raw.githubusercontent.com/weishiji668/加减乘除boss/main/boss-filter.user.js
+// @homepageURL  https://github.com/weishiji668/boss-zhipin-userscripts
+// @supportURL   https://github.com/weishiji668/boss-zhipin-userscripts/issues
+// @updateURL    https://raw.githubusercontent.com/weishiji668/boss-zhipin-userscripts/main/boss-filter.user.js
+// @downloadURL  https://raw.githubusercontent.com/weishiji668/boss-zhipin-userscripts/main/boss-filter.user.js
 // @match        https://www.zhipin.com/*
 // @match        https://*.zhipin.com/*
 // @run-at       document-idle
@@ -25,6 +25,15 @@
 // ===== v1.2.3 变更说明（2026-09-21，代码评审）=====
 // ===== v1.3.2 变更说明（2026-09-23）=====
 // ===== v1.3.3 变更说明（2026-09-23，用户反馈「详细页一次只检测几条，多了就风控，检测不完」）=====
+// ===== v1.3.4 变更说明（2026-09-23，用户反馈「地点黑名单我都是写详细地址的 + 这一栏 UI 没做好」）=====
+// N1 匹配改宽松：原来黑名单是「原样子串」比较，而站点给的文本自带分隔符 ——
+//    卡片上是「深圳·龙岗区·坂田」，面板地址是「深圳龙岗区 荣丰中心A栋」；
+//    你按习惯写「深圳龙岗区银信中心B座」时，空格/圆点对不上就漏判。
+//    现在公司黑名单与地点黑名单都先把两侧的空白与常见分隔符（空格 / 全角空格 / · / 、 / ， / / / - / 括号等）抹掉再比，
+//    写「深圳龙岗区银信中心B座」「荣丰中心A栋」「龙华」都能命中；命中原因里显示你自己写的那一条。
+// N2 面板 UI：地点黑名单原来只有一行灰色说明、还被 v1.2.2 的注释隔开，看不出是哪个框。现在：
+//    ① 公司黑名单 / 地点黑名单 各有一行加粗标题 + 当前条数；② 两个输入框都加了 placeholder 示例；
+//    ③ 说明挪到两个框下面，写清「关键词或详细地址都行、空格与分隔符不影响匹配」与判定来源。
 // L1 问题：详情正文只能靠「补取」——脚本对 /job_detail/<id>.html 整页拉取，间隔 1.2~2.5 秒；
 //    站点对这种连续整页请求很快回「请稍候」校验页（实测第 6 条就被拦），于是整个列表永远检测不完。
 // L2 关键点：列表页右侧本来就有**页面内的职位详情面板**（职位描述 / 任职要求 / 工作地址）——
@@ -125,7 +134,7 @@
 // F3 稳健：接口薪资索引加上限 3000（无限滚动时不再只增不减）
 // F4 面板显示版本号，便于排查
 
-const VERSION='1.3.3';
+const VERSION='1.3.4';
 const LS_KEY='bwf_rules_v1';
 const JD_KEY='bwf_jd_cache';           // 详情正文缓存（按 jobId）：{ [jobId]: {ts, jd} }
 const DEFAULT_WORDS=['电销','电话销售','外呼','催收','催缴','装配','测试','软件开发','软件工程','前端','后端','全栈','算法',
@@ -980,24 +989,33 @@ function renderJdStat(){
   if(jdLastMsg) s+=' · '+jdLastMsg;
   el.textContent=s;
 }
+// v1.3.4：黑名单的「宽松包含」——站点给的文本自带空格/圆点（「深圳·龙岗区·坂田」「深圳龙岗区 荣丰中心A栋」），
+// 你按习惯写「深圳龙岗区银信中心B座」时会因分隔符对不上而漏判；两侧都先抹掉空白与常见分隔符再比。
+function looseKey(s){
+  return String(s||'').toLowerCase().replace(/[\s\u00a0·、,，.。;；/\|_\-—－()（）[\]【】「」]+/g,'');
+}
 function decide(ctx){
   // 0) 黑名单是「绝对」项：命中就隐藏，不参与后续相对规则的权衡
   const compLow=String(ctx.company||'').toLowerCase(), cardLow=String(ctx.cardText||'').toLowerCase();
+  const compKey=looseKey(ctx.company), cardKey=looseKey(ctx.cardText);
   for(const c of (cfg.blackCompanies||[])){
     const k=String(c||'').trim();
     if(!k) continue;
-    const kk=k.toLowerCase();
-    if(compLow.includes(kk)) return {text:'黑名单·公司：'+k, action:'隐藏'};
+    const kk=looseKey(k), kLow=k.toLowerCase();
+    if(!kk) continue;
+    if(compKey.includes(kk)||compLow.includes(kLow)) return {text:'黑名单·公司：'+k, action:'隐藏'};
     // v1.2.2：公司名字段没取到/对不上时，退回整张卡片文字匹配（你写在卡片上的名字，出现即算）
-    if(cardLow.includes(kk)) return {text:'黑名单·公司：'+k+'（卡片文字命中）', action:'隐藏'};
+    if(cardKey.includes(kk)||cardLow.includes(kLow)) return {text:'黑名单·公司：'+k+'（卡片文字命中）', action:'隐藏'};
   }
   const realAddr=jobAddrOf(ctx.jobId);          // 详情页的「工作地址」（卡片上的区可能不准）
   const ownAddr=jdAddrOf(ctx.jobId);            // v1.3.3：本脚本自己缓存的「工作地址」（页面内面板 / 详情接口）
   for(const a of (cfg.blackAreas||[])){
-    const k=String(a||'').trim().toLowerCase();
+    const k=String(a||'').trim();
     if(!k) continue;
-    const inCard=cardLow.includes(k);
-    const inReal=String(realAddr.addr||'').toLowerCase().includes(k)||String(realAddr.area||'').toLowerCase().includes(k)||String(ownAddr||'').toLowerCase().includes(k);
+    const kk=looseKey(k), kLow=k.toLowerCase();
+    if(!kk) continue;
+    const inCard=cardKey.includes(kk)||cardLow.includes(kLow);
+    const inReal=looseKey([String(realAddr.addr||''),String(realAddr.area||''),String(ownAddr||'')].join(' ')).includes(kk);
     if(inReal) return {text:'黑名单·工作地址：'+k, action:'隐藏'};
     if(inCard) return {text:'黑名单·地点(卡片)：'+k, action:'隐藏'};   // v1.2.5：双源并列——详情地址存在时卡片命中仍生效
   }
@@ -1617,6 +1635,7 @@ function ensureUi(){
     '.bwf-x:hover{color:#1f2430}'+
     '.bwf-body{padding:12px 14px 14px}'+
     '.bwf-mute{color:var(--bwf-mute);font-size:12px}'+
+    '.bwf-lbl{font-weight:600;color:#1f2430}'+          // v1.3.4：黑名单两栏的标题（原来地点那栏只有灰色说明，看不出是哪个框）
     '.bwf-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}'+
     '.bwf-card{background:linear-gradient(180deg,#fbfcff,#f4f8ff);border:1px solid var(--bwf-line);border-radius:12px;padding:8px 10px}'+
     '.bwf-card b{display:block;font-size:19px;line-height:1.3;color:var(--bwf)}'+
@@ -1809,11 +1828,11 @@ function renderPanel(){
     '<span class="bwf-mute" id="bwfDirty"></span></div>'+
     '</div></details>'+
     '<details class="bwf-fold" open><summary>黑名单<span class="bwf-mute">绝对项：命中就隐藏 · 公司 '+((cfg.blackCompanies||[]).length)+' 条 / 地点 '+((cfg.blackAreas||[]).length)+' 条</span></summary><div class="bwf-foldbody">'+
-    '<div class="bwf-row bwf-mute">公司黑名单（每行一个公司名，可只写关键词）</div>'+
-    '<textarea id="bwfBlackC" style="height:56px">'+escHtml((cfg.blackCompanies||[]).join('\n'))+'</textarea>'+
-    '<div class="bwf-row bwf-mute" style="font-size:11px">v1.2.2：公司名依次取「页面组件状态 → 接口 → DOM」；都取不到时退回整张卡片文字匹配——只要卡片上出现这个词就会隐藏。写关键词也行（如「智玩店」）</div>'+
-    '<div class="bwf-row bwf-mute">地点黑名单（每行一个地点，如「龙华」「坂田」「南山科技园」）</div>'+
-    '<textarea id="bwfBlackA" style="height:56px">'+escHtml((cfg.blackAreas||[]).join('\n'))+'</textarea>'+
+    '<div class="bwf-row"><span class="bwf-lbl">公司黑名单</span><span class="bwf-mute">每行一个公司名，可只写关键词 · 当前 '+((cfg.blackCompanies||[]).length)+' 条</span></div>'+
+    '<textarea id="bwfBlackC" style="height:56px" placeholder="智玩店科技&#10;贝壳找房&#10;跨越速运集团有限公司">'+escHtml((cfg.blackCompanies||[]).join('\n'))+'</textarea>'+
+    '<div class="bwf-row" style="margin-top:10px"><span class="bwf-lbl">地点黑名单</span><span class="bwf-mute">每行一个地点或详细地址 · 当前 '+((cfg.blackAreas||[]).length)+' 条</span></div>'+
+    '<textarea id="bwfBlackA" style="height:56px" placeholder="龙华&#10;坂田&#10;深圳龙岗区 荣丰中心A栋">'+escHtml((cfg.blackAreas||[]).join('\n'))+'</textarea>'+
+    '<div class="bwf-row bwf-mute" style="font-size:11px">两栏都是「命中就隐藏」的绝对项。写关键词（龙华 / 坂田 / 荣丰中心）或直接粘详细地址（深圳龙岗区银信中心B座）都行 —— 空格、·、/ 这类分隔符不影响匹配。地点判定三处并列：① 页面内详情面板 / 详情接口拿到的「工作地址」；② 监控脚本镜像的地址；③ 卡片上的地点文字（如「深圳·龙岗区·坂田」）。任一处命中即隐藏，原因里写明是哪一路；三处都没有就不判（不误杀）。公司名依次取「页面组件状态 → 接口 → DOM」（v1.2.2 修），都取不到时退回整张卡片文字匹配。</div>'+
     '<div class="bwf-row"><button class="bwf-save" id="bwfBlackSave">保存黑名单</button></div>'+
     '</div></details>'+
     '<details class="bwf-fold"><summary>右键隐藏<span class="bwf-mute">'+Object.keys(cfg.hideIds||{}).length+' 条 · 在卡片上点右键即可隐藏 / 恢复</span></summary><div class="bwf-foldbody">'+

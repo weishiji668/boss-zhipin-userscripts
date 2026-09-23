@@ -53,6 +53,11 @@ for (const f of files) {
     errors.push("@description 里找不到 v" + ver + "（本项目的约定：描述末尾是完整更新日志）");
   }
 
+  // 脚本内 VERSION 常量必须与头部 @version 一致。不一致时面板显示的版本、自动更新判断
+  // 与仓库里的版本号会各说各话（本仓库真踩过：filter 头部 1.3.3 / 正文 1.3.4，门禁却全绿，
+  // 发出去 @version 不递增 → 老用户永远收不到更新）。
+  const vm = src.match(/(?:const|var|let)\s+VERSION\s*=\s*['"]([0-9]+\.[0-9]+\.[0-9]+)['"]/);
+  if (vm && vm[1] !== ver) errors.push("脚本内 VERSION='" + vm[1] + "' 与头部 @version '" + ver + "' 不一致（两者必须同步改）");
   for (const k of ["@homepageURL", "@supportURL", "@updateURL", "@downloadURL"]) {
     const v = (header[k] || [""])[0];
     if (v && PLACEHOLDER.test(v)) {

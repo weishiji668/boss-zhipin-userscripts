@@ -8,7 +8,7 @@
   "engines": { "node": ">=18" },
   "scripts": {
     "dev": "node tools/dev-server.cjs",
-    "check": "npm run check:syntax && npm run check:headers && npm run check:private && npm run check:changelog && npm run check:docs && npm run check:compat",
+    "check": "npm run check:syntax && npm run check:headers && npm run check:private && npm run check:changelog && npm run check:docs && npm run check:compat && npm run check:links",
     "check:syntax": "node tools/check-syntax.cjs",
     "check:compat": "node tools/inline-compat.cjs --check",
     "check:headers": "node tools/verify-headers.cjs",
@@ -16,12 +16,14 @@
     "check:private": "node tools/scan-private.cjs",
     "check:changelog": "node tools/build-changelog.cjs --check",
     "check:docs": "node tools/gen-script-docs.cjs --check",
+    "check:links": "node tools/check-doc-links.cjs",
     "changelog": "node tools/build-changelog.cjs",
     "meta:set": "node tools/set-repo-meta.cjs",
     "test": "node tests/test_core.js",
     "test:compat": "node tests/test_compat.cjs",
     "test:e2e": "node tests/test_e2e.cjs",
     "test:filter": "node tests/test_filter.cjs",
+    "test:single-fab": "node tests/test_single_fab.cjs",
     "test:tag": "node tests/test_tag.cjs",
     "test:insight": "node tests/test_insight.cjs",
     "test:insight-chat": "node tests/test_insight_chat.cjs",
@@ -29,7 +31,7 @@
     "test:consist": "node tests/test_consist.cjs",
     "test:xlsx": "node tests/test_xlsx.cjs",
     "test:dashboard": "node tests/test_dashboard.cjs",
-    "test:all": "node tests/test_core.js && node tests/test_xlsx.cjs && node tests/test_e2e.cjs && node tests/test_dashboard.cjs && node tests/test_filter.cjs && node tests/test_insight.cjs && node tests/test_insight_chat.cjs && node tests/test_tag.cjs && node tests/test_consist.cjs && node tests/test_no_manager.cjs"
+    "test:all": "node tests/test_core.js && node tests/test_xlsx.cjs && node tests/test_e2e.cjs && node tests/test_dashboard.cjs && node tests/test_filter.cjs && node tests/test_insight.cjs && node tests/test_insight_chat.cjs && node tests/test_tag.cjs && node tests/test_consist.cjs && node tests/test_single_fab.cjs && node tests/test_no_manager.cjs"
   },
   "devDependencies": {
     "playwright": "^1.63.0"

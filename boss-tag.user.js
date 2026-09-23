@@ -5,10 +5,10 @@
 // @description  在职位列表页给「命中规则」的岗位卡片打标签——默认只标记、绝不改站点数据；状态条「隐藏未命中」配合人工复核：先打标（职位名/公司名/地区 正向规则）→ 浏览复核、右键取消误标 → 点按钮把没命中的藏起来，剩下的就是你要投的。规则集：地区（外地）/ 关键词 / 公司名 / 起步月薪上下限。面板可拖动（位置存本机，刷新后还在）；规则改完 800ms 自动保存并立即重扫。配合「页面过滤」「一键投递」：命中卡片打 data-bt-hit / data-bt-tags，按 jobId 存 bt_hits，暴露 window.__bossTagQuery 只读查询。默认不发任何请求；薪资有字体反爬，优先用接口/组件明文，拿不到就跳过判断。v1.0.1：修「面板/标签文字每轮重写又喂回 MutationObserver，形成约 3 轮/秒的自激空转」（改为值未变不写） + 「恢复默认」被旧输入回写导致默认词表被清空、薪资阈值没真恢复 + 薪资阈值框不触发 800ms 自动保存（面板文案是假承诺） + 关标签开关会清空 bt_hits 名单（改为只清 DOM 标记） + 多标签页整键覆盖互相吞掉命中记录（改为写前合并、删除留墓碑） + 无ID卡片 __bossTagQuery 返回 hit:false 与 data-bt-hit 自相矛盾 + 面板存过位置后视口变小就滚不回来（按当前视口钳制） + chip 与面板的开关文案/勾选不同步（按钮文案与行为相反） + 触屏拖动面板遇 pointercancel 后监听器残留、面板乱跑； 另做 findCards 同容器重复测量去重与命中记录等值免写盘。v1.1.0：地区规则改只认卡片底行地点文字（不再吃整卡文字，JD/标签里的城市名不再误判）；新增「家乡城市」词表，底行地点命中家乡即不标外地（用户口径「命中深圳就排除上海」）；状态条新增「隐藏命中」按钮；v1.2.0 按用户流水线口径再定版：命中脚本=**正向标记**（职位名/公司名/地区白名单），「隐藏未命中」按钮藏没命中的卡；排除类词（外地城市/培训费/薪资阈值）一次性自动迁移到过滤脚本（地点黑名单/月薪上下限），本地区块改叫「地区（命中）」；新增右键「取消标记/恢复标记」（取消名单落盘 bt_unmarked，复核误标用）；隐藏协同协议 v1：data-bt-focus / data-bwf-hide / data-bc-hide 三个标记各脚本只撤自己的、恢复显示前先看他人标记；地点提取优先 DOM 选择器，退回落解析 innerText 末行（过滤自绘胶囊行）。v1.2.3：地区表改回**正向白名单**（写想去的城市，子串匹配：深圳 命中 深圳·福田区·梅林）；移除 v1.2.2 的「负向命中直接隐藏」与面板「被隐藏清单」（不想去的城市归过滤脚本的地点黑名单）；启动时清理 v1.2.2 遗留的 data-bt-hide 隐藏。v1.2.4：自检提示（页面有卡片容器但识别 0 张时明示一次）；过滤条存在时本条停靠其上、视觉合成一组（不再两条黑 pill 并排像重复）。v1.2.5：右键菜单真的能用了（标签原来被 pointer-events:none 挡着，鼠标根本点不到，「取消标记/恢复标记」等于不存在、取消名单永远空 —— 改成可点，并给卡片右上角补了一个兜底热区）；「恢复默认」不再把地区表恢复成 14 个城市的**负向**黑名单（那会让「隐藏未命中」把本地岗位全藏掉、外地岗位反而标成命中），也不再清空你自己填的关键词/公司名/薪资上下限；「隐藏未命中」开着但一条正向规则都没有时，横幅明示一次、不静默藏空整页；「清空取消标记名单」与右键取消标记改为写盘前先合并其它标签页的名单并给删除留墓碑（原来整键覆盖，两个标签页互相把对方刚取消的标记复活）。
 // @author       weishiji668
 // @license      MIT
-// @homepageURL  https://github.com/weishiji668/加减乘除boss
-// @supportURL   https://github.com/weishiji668/加减乘除boss/issues
-// @updateURL    https://raw.githubusercontent.com/weishiji668/加减乘除boss/main/boss-tag.user.js
-// @downloadURL  https://raw.githubusercontent.com/weishiji668/加减乘除boss/main/boss-tag.user.js
+// @homepageURL  https://github.com/weishiji668/boss-zhipin-userscripts
+// @supportURL   https://github.com/weishiji668/boss-zhipin-userscripts/issues
+// @updateURL    https://raw.githubusercontent.com/weishiji668/boss-zhipin-userscripts/main/boss-tag.user.js
+// @downloadURL  https://raw.githubusercontent.com/weishiji668/boss-zhipin-userscripts/main/boss-tag.user.js
 // @match        https://www.zhipin.com/*
 // @match        https://*.zhipin.com/*
 // @run-at       document-idle

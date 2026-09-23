@@ -757,6 +757,42 @@ function check(name, cond, extra){
     await ctxQ.close();
   }
   console.log('v1.2.0 右键隐藏 / 右键把词加进排除词');
+  console.log('v1.3.4 地点黑名单：详细地址（不带分隔符的写法）也要命中');
+  {
+    const LIST_L = '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body><div class="job-list"><ul>'
+      + '<li class="job-card-wrapper"><div class="job-card-body"><a class="job-card-left" href="/job_detail/w1.html">'
+      + '<div class="job-info"><div class="job-title"><span class="job-name">跨境电商运营</span><span class="salary">6-9K</span></div></div>'
+      + '<div class="company-info"><h3 class="company-name">某某电商有限公司</h3><p class="job-area">深圳·龙岗区·坂田</p></div></a></div></li>'
+      + card('w2','海外产品助理','5-6K','某某科技')
+      + '</ul></div></body></html>';
+    const JD_W = '岗位职责：负责店铺日常运营与数据分析，接受轮班；任职要求：大专及以上学历，做事细心有耐心，有相关经验者优先。';
+    const ctxL = await browser.newContext();
+    await ctxL.route('**/*', route=>{
+      const u = route.request().url();
+      if(!u.includes('zhipin.com')) return route.continue();
+      route.fulfill({ status:200, contentType:'text/html;charset=utf-8', body:LIST_L });
+    });
+    const pL = await ctxL.newPage();
+    const errsL = [];
+    pL.on('pageerror', e=>errsL.push(String((e&&e.message)||e)));
+    await pL.goto('https://www.zhipin.com/web/geek/job?query=x', { waitUntil:'load' });
+    await pL.evaluate((jd)=>{
+      // 黑名单照用户习惯写：不带空格/圆点的详细地址
+      localStorage.setItem('bwf_rules_v1', JSON.stringify({ on:true, hideSalaryOut:false, words:[], wordsCard:[], wordsJd:[], blackAreas:['深圳龙岗区坂田','深圳龙岗区银信中心B座'] }));
+      // 第二条只有「工作地址」有线索（卡片上写的区不一样），地址来自页面内详情缓存
+      localStorage.setItem('bwf_jd_cache', JSON.stringify({ w2:{ ts:Date.now(), jd:jd, addr:'深圳龙岗区 银信中心B座' } }));
+    }, JD_W);
+    await pL.addScriptTag({ content: SCRIPT });
+    await pL.waitForTimeout(1300);
+    const pickL = ()=>pL.evaluate(()=>Array.prototype.slice.call(document.querySelectorAll('li.job-card-wrapper')).map(li=>({
+      t:li.innerText.replace(/\s+/g,' ').slice(0,8), why:li.getAttribute('data-bwf-reason')||'', vis:getComputedStyle(li).display!=='none' })));
+    const rL = await pickL();
+    const byL = (arr,n)=>{ const x=arr.find(o=>o.t.indexOf(n)>=0); return x||{t:n,why:'(缺)',vis:null}; };
+    check('卡片地点是「深圳·龙岗区·坂田」，黑名单写「深圳龙岗区坂田」→ 命中（分隔符不影响）', byL(rL,'跨境电商运营').vis===false && /黑名单·地点\(卡片\)：深圳龙岗区坂田/.test(byL(rL,'跨境电商运营').why), JSON.stringify(rL));
+    check('工作地址是「深圳龙岗区 银信中心B座」，黑名单写「深圳龙岗区银信中心B座」→ 命中工作地址那一路', byL(rL,'海外产品助理').vis===false && /黑名单·工作地址：深圳龙岗区银信中心B座/.test(byL(rL,'海外产品助理').why), JSON.stringify(rL));
+    check('地点黑名单宽松匹配无运行时错误', errsL.length===0, errsL.join(' | '));
+    await ctxL.close();
+  }
   {
     const ctxR = await browser.newContext();
     await ctxR.route('**/*', route=>{
@@ -916,7 +952,7 @@ function check(name, cond, extra){
     check('公司名只在 Vue 状态里 → 也能命中并隐藏', !!b2&&b2.disp==='none'&&/黑名单·公司/.test(b2.reason)&&!/卡片文字命中/.test(b2.reason), JSON.stringify(b2));
     check('没被拉黑的岗位不受影响（不误伤）', !!b3&&b3.disp!=='none', JSON.stringify(b3));
     const blackCount = await pB.evaluate(()=>{ document.getElementById('bwfRules').click(); const p=document.getElementById('bwfPanel'); return p?p.textContent:''; });
-    check('面板黑名单计数与提示就位（v1.2.2 说明）', /公司黑名单/.test(blackCount)&&/v1\.2\.2/.test(blackCount), (blackCount||'').slice(0,80));
+    check('面板黑名单两栏都有标题与条数（v1.3.4：地点那栏不再只有一行灰字）', /公司黑名单/.test(blackCount)&&/地点黑名单/.test(blackCount)&&/当前 \d+ 条/.test(blackCount)&&/v1\.2\.2/.test(blackCount), (blackCount||'').slice(0,140));
     check('公司黑名单无运行时错误', errsB.length===0, errsB.join(' | '));
 
     // 右键：选中公司名文字 → 加进公司黑名单

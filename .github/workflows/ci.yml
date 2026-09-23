@@ -15,7 +15,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - name: 语法门禁（7 个用户脚本）
+      - name: 语法门禁（6 个用户脚本）
         run: node tools/check-syntax.cjs
       - name: 头部元数据门禁
         run: node tools/verify-headers.cjs
@@ -27,6 +27,8 @@ jobs:
         run: node tools/gen-script-docs.cjs --check
       - name: GM 兼容层是否已内联到各脚本
         run: node tools/inline-compat.cjs --check
+      - name: 发布地址一致性（脚本头部 / README / docs + 仓库名合法性）
+        run: node tools/check-doc-links.cjs
 
   tests:
     runs-on: ubuntu-latest
@@ -46,6 +48,7 @@ jobs:
       - name: 浏览器用例（全部走 mock，不访问真实站点）
         run: |
           npm run test:filter
+          npm run test:single-fab
           npm run test:tag
           npm run test:consist
           npm run test:insight

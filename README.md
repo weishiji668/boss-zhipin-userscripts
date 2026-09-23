@@ -5,7 +5,7 @@
 
 ![总览](images/01-overview.png)
 
-[![CI](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/ci.yml)
+[![CI](https://github.com/weishiji668/boss-zhipin-userscripts/actions/workflows/ci.yml/badge.svg)](https://github.com/weishiji668/boss-zhipin-userscripts/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
@@ -72,18 +72,18 @@
 
 | 脚本 | 安装 |
 | --- | --- |
-| 页面过滤 | [boss-filter.user.js](https://raw.githubusercontent.com/OWNER/REPO/main/boss-filter.user.js) |
-| 命中打标签 | [boss-tag.user.js](https://raw.githubusercontent.com/OWNER/REPO/main/boss-tag.user.js) |
-| 岗位监控 | [boss-watcher.user.js](https://raw.githubusercontent.com/OWNER/REPO/main/boss-watcher.user.js) |
-| 聊天助手 | [boss-chat.user.js](https://raw.githubusercontent.com/OWNER/REPO/main/boss-chat.user.js) |
-| 会话体检 | [boss-insight.user.js](https://raw.githubusercontent.com/OWNER/REPO/main/boss-insight.user.js) |
-| 一致性体检 | [boss-consist.user.js](https://raw.githubusercontent.com/OWNER/REPO/main/boss-consist.user.js) |
+| 页面过滤 | [boss-filter.user.js](https://raw.githubusercontent.com/weishiji668/boss-zhipin-userscripts/main/boss-filter.user.js) |
+| 命中打标签 | [boss-tag.user.js](https://raw.githubusercontent.com/weishiji668/boss-zhipin-userscripts/main/boss-tag.user.js) |
+| 岗位监控 | [boss-watcher.user.js](https://raw.githubusercontent.com/weishiji668/boss-zhipin-userscripts/main/boss-watcher.user.js) |
+| 聊天助手 | [boss-chat.user.js](https://raw.githubusercontent.com/weishiji668/boss-zhipin-userscripts/main/boss-chat.user.js) |
+| 会话体检 | [boss-insight.user.js](https://raw.githubusercontent.com/weishiji668/boss-zhipin-userscripts/main/boss-insight.user.js) |
+| 一致性体检 | [boss-consist.user.js](https://raw.githubusercontent.com/weishiji668/boss-zhipin-userscripts/main/boss-consist.user.js) |
 
 
 3. 打开职位列表页（例如 `https://www.zhipin.com/web/geek/job?query=...`），按 `Ctrl+Shift+R` 强刷一次。
 
-> 链接里的 `OWNER/REPO` 是占位符：维护者跑一次 `npm run meta:set -- --owner <用户名> --repo <仓库名>`，
-> 脚本头部的 `@updateURL` 与本页链接就都会指向真实地址。发布前请确认已替换（`npm run check:headers:strict` 会拦住你）。
+> 换仓库时三处要一起改：脚本头部（`npm run meta:set -- --owner <用户名> --repo <仓库名>`）、上面的安装链接、
+> 以及 `docs/install.md`。改完跑 `npm run check` —— `check:links` 会核对三处地址是否一致，并挡住 GitHub 建不出来的仓库名（例如中文名）。
 
 ### 一键投递不在公开仓库
 
@@ -146,7 +146,7 @@ boss-*.user.js    6 个脚本本体（必须留在根目录：tests 按 ../boss-
 docs/             使用与设计文档（docs/scripts/ 由 tools/gen-script-docs.cjs 自动生成）
 images/           文档截图（本地模拟页，无真实账号信息）
 tests/            Playwright + Node 测试，全部走 mock，不访问真实站点
-tools/            开发与门禁：dev-server / check-syntax / verify-headers / scan-private / build-changelog / set-repo-meta
+tools/            开发与门禁：dev-server / check-syntax / verify-headers / scan-private / build-changelog / check-doc-links / set-repo-meta
 .github/          CI 与 issue / PR 模板
 ```
 

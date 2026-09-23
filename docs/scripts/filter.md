@@ -5,7 +5,7 @@
 | | |
 | --- | --- |
 | 文件 | `boss-filter.user.js` |
-| 版本 | v1.3.3 |
+| 版本 | v1.3.4 |
 | 生效页面 | https://www.zhipin.com/*、https://*.zhipin.com/* |
 | 运行时机 | document-idle（@noframes：不在 iframe 里重复注入） |
 
