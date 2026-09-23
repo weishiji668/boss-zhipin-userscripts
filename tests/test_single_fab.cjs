@@ -4,7 +4,7 @@
 // 背景：2026-09-23 用户实测截图里出现了两个 🩺 球。根因是 UI 防重只看内存变量
 // （chat 的 `if(ui) return ui`、insight 的 `ui.root + document.body.contains()`），
 // 同页两份脚本各有各的闭包，于是各建一份 DOM。修复：改成 DOM 级幂等
-// （先找 #bcRoot / #biRoot / #bdRoot，有就复用），见 chat v1.5.11 / insight v0.5.10。
+// （先找 #bcRoot / #biRoot / #bdRoot，有就复用），见 chat v1.5.11 / insight v0.5.9。
 // 注：boss-watcher 原本就是 DOM 判断（`if(document.getElementById('bwPanel')) return`），
 // 这里一并回归，防止以后被改回内存判断。
 const fs = require('fs');

@@ -5,7 +5,7 @@
 | | |
 | --- | --- |
 | 文件 | `boss-insight.user.js` |
-| 版本 | v0.5.10 |
+| 版本 | v0.5.9 |
 | 生效页面 | https://www.zhipin.com/*、https://*.zhipin.com/* |
 | 运行时机 | document-idle（@noframes：不在 iframe 里重复注入） |
 
