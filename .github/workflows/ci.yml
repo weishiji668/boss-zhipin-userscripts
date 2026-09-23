@@ -45,6 +45,8 @@ jobs:
         run: node tests/test_compat.cjs
       - name: 安装 Playwright 浏览器
         run: npx playwright install --with-deps chromium
+      - name: 安装 Python 依赖（xlsx 模板结构校验用）
+        run: python -m pip install --quiet openpyxl
       - name: 浏览器用例（全部走 mock，不访问真实站点）
         run: |
           npm run test:filter

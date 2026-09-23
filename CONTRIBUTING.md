@@ -20,14 +20,14 @@ npm run dev                # 起本地安装服务（默认 http://127.0.0.1:889
 npm run check        # = 语法 + 元数据 + 私有内容扫描
 npm run changelog    # 改了脚本头部的 @description 就要重跑，否则 CI 会红
 npm test             # 纯 Node 的单元测试，秒级
-npm run test:all     # 含 Playwright 的浏览器用例（首次要 npx playwright install chromium）
+npm run test:all     # 含 Playwright 的浏览器用例（首次要 npx playwright install chromium；xlsx 结构校验另需 python + openpyxl）
 ```
 
 ## 目录约定
 
 | 路径 | 说明 |
 | --- | --- |
-| `boss-*.user.js`（仓库根目录） | 7 个用户脚本本体。**必须留在根目录** —— `tests/*.cjs` 是按 `../boss-xxx.user.js` 读它们的 |
+| `boss-*.user.js`（仓库根目录） | 6 个用户脚本本体。**必须留在根目录** —— `tests/*.cjs` 是按 `../boss-xxx.user.js` 读它们的 |
 | `tests/` | Playwright + Node 测试。全部用 `page.route` mock 站点响应，**不打真实站点** |
 | `tools/` | 开发与门禁工具：本地安装服务、语法/元数据/私有内容/更新日志检查 |
 | `docs/` | 面向使用者的说明。README 只放「第一屏 + 导航」 |

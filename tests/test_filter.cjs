@@ -1031,13 +1031,23 @@ function check(name, cond, extra){
           "'freeze':ws.freeze_panes,'explain':wb['说明'].max_row},ensure_ascii=False))"
         ].join('\n');
         info = JSON.parse(execFileSync('python', ['-c', py, out], { encoding:'utf8', env: Object.assign({}, process.env, { PYTHONIOENCODING:'utf-8' }) }));
-      }catch(e){ info = { error: String(e.message).slice(0,200) }; }
-      check('openpyxl 能正常打开（不是坏文件）', !!info && !info.error, JSON.stringify(info).slice(0,200));
-      check('两个工作表：规则 + 说明', info.sheets && info.sheets[0]==='规则' && info.sheets[1]==='说明', JSON.stringify(info.sheets));
-      check('表头正确', info.header && info.header.join(',')==='类型,字段,匹配,值,动作,启用,备注', JSON.stringify(info.header));
-      check('设置了列宽', info.widths && info.widths[3]>=20, JSON.stringify(info.widths));
-      check('冻结首行 + 5 组下拉', info.freeze==='A2' && info.validations===5, 'freeze='+info.freeze+' validations='+info.validations);
-      check('说明页有内容', info.explain>=8, 'rows='+info.explain);
+      }catch(e){
+        const msg = String(e.message);
+        info = { error: /No module named '?openpyxl|openpyxl/.test(msg)
+          ? "缺少 Python 依赖 openpyxl —— 先 pip install openpyxl（仓库的 CI 会在跑用例前装好）"
+          : msg.slice(0,200) };
+      }
+      // 缺依赖时只报这一条：后面 5 条只是同一个原因的连锁反应，全红反而看不出真因
+      if (info && info.error && /openpyxl/.test(info.error)) {
+        check('xlsx 结构校验需要 python + openpyxl', false, info.error);
+      } else {
+        check('openpyxl 能正常打开（不是坏文件）', !!info && !info.error, JSON.stringify(info).slice(0,200));
+        check('两个工作表：规则 + 说明', info.sheets && info.sheets[0]==='规则' && info.sheets[1]==='说明', JSON.stringify(info.sheets));
+        check('表头正确', info.header && info.header.join(',')==='类型,字段,匹配,值,动作,启用,备注', JSON.stringify(info.header));
+        check('设置了列宽', info.widths && info.widths[3]>=20, JSON.stringify(info.widths));
+        check('冻结首行 + 5 组下拉', info.freeze==='A2' && info.validations===5, 'freeze='+info.freeze+' validations='+info.validations);
+        check('说明页有内容', info.explain>=8, 'rows='+info.explain);
+      }
     }
     await ctxT.close();
   }

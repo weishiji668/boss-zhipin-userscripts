@@ -137,7 +137,7 @@ npm install
 npm run dev                # 本地安装服务：http://127.0.0.1:8899/
 npm run check              # 语法 + 元数据 + 私有内容 + 更新日志
 npm test                   # 纯 Node 单元测试（秒级）
-npm run test:all           # 含 Playwright 浏览器用例（首次需 npx playwright install chromium）
+npm run test:all           # 含 Playwright 浏览器用例（首次需 npx playwright install chromium；xlsx 结构校验另需 pip install openpyxl）
 npm run changelog          # 从各脚本 @description 重新生成 CHANGELOG.md
 ```
 
