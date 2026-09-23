@@ -4,7 +4,8 @@
 // 用法：
 //   node tools/set-repo-meta.cjs --owner <GitHub用户名> --repo <仓库名> [--author <署名>] [--namespace <命名空间>] [--dry]
 // 例：
-//   node tools/set-repo-meta.cjs --owner <你的 GitHub 用户名> --repo 加减乘除boss（URL 里需要时可用百分号编码 jiajianchengchu-boss） --author <署名>
+//   node tools/set-repo-meta.cjs --owner <你的 GitHub 用户名> --repo jiajianchengchu-boss --author <署名>
+//   （项目显示名是「加减乘除boss」；GitHub 仓库名只能用 ASCII 字母/数字/.-_ ，所以仓库名用拼音）
 //
 // 承诺：只改 ==UserScript== 头块，正文一个字节都不动；重复执行结果一致（幂等）；
 // 先用 --dry 看一遍再落盘。
