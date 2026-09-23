@@ -163,6 +163,22 @@ npm run test:all                                                      # 浏览�
 node tools/publish-release.cjs --dry                                  # 本地先看一眼要发什么
 ```
 
+### 包（GitHub Packages）
+
+6 个脚本同时以 npm 包的形式发布在 GitHub Packages：`@weishiji668/boss-zhipin-userscripts`
+（仓库右侧「Packages」）。版本号取自 `.release/release.json` 的 tag，与 Release 同步，
+由 `.github/workflows/package.yml` 自动发布 —— 同样用 Actions 自带的仓库令牌，不需要个人令牌。
+
+> 注意：GitHub Packages 的 npm 包**即使公开，安装时也要带 token**（GitHub 的限制，与本项目无关）。
+> 普通使用者请直接用上面的安装链接，不需要装这个包；打包主要是给需要固定版本产物的人用：
+>
+> ```bash
+> NODE_AUTH_TOKEN=<你的 GitHub token> npm install @weishiji668/boss-zhipin-userscripts \
+>   --registry=https://npm.pkg.github.com
+> ```
+>
+> 本地预览会打进包里的文件：`node tools/publish-package.cjs --dry`（或 `npm pack --dry-run`）。
+
 ## 参考与致谢
 
 - 取数思路与「120/150 位限额语义」参考了开源项目 [Ocyss/boss-helper](https://github.com/Ocyss/boss-helper)（MIT）；

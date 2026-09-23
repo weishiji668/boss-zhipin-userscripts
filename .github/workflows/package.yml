@@ -1,0 +1,31 @@
+name: Package
+
+# 把 6 个用户脚本发成一个 npm 包到 GitHub Packages（仓库侧栏的「包裹 / Packages」）。
+# 与 Release 一样用 Actions 自带的仓库令牌，不需要任何人的个人令牌 / 登录。
+# 版本号取自 .release/release.json 的 tag —— 发版时只改那一处。
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".release/**"      # 发版（改 tag / 说明）
+      - "package.json"     # 包配置（name / files / registry）
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@weishiji668"
+      - name: 发布到 GitHub Packages（同版本已存在则跳过）
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node tools/publish-package.cjs
