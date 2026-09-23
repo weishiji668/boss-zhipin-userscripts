@@ -5,10 +5,10 @@
 // @description  岗位监控（按需收录版）：面板粘贴「公司名 + 职位名」→ 站内搜索定位 → 抓一次详情建档（记 HR 名）→ 之后你浏览到它时用页面实时数据对比，识别「薪资下调 / 要求拔高 / HR 换人 / 突然下线」。不做整页预处理、不自动建档。变更日志=原始流水，跟进信号=待办；监控清单可导出 / 导入（JSON）。只读，除你点收录时发 1 次搜索 + 1 次详情外不发请求；数据仅存本机。聊天已拆到独立脚本 boss-chat.user.js。v0.9.1：修复「浏览对比的更新在重开页面后丢失」「历史快照被重复数据冲掉」「风控熔断后仍继续请求」「清空全部数据清不干净」「接口观察模式开关无效」等一批 bug（详见脚本头部变更说明），监控口径不变。 v0.9.3：修复「撤销变更按旧 100 上限截断误删人工记录」「立即检查可并发重复请求」「设置页数字输入被 5 秒重绘吞掉」「详情页/粘贴 ID 收录拿不到 HR」「重复收录静默失效」「热路径分键写入失效」「导入备份键按天累加不清」「监控间隔改了不生效」等一批 bug，监控口径不变。v0.9.4：面板可拖动（按住标题栏拖，位置存本机 bw_panelpos，刷新还在；视口钳制防拖出屏幕）。v0.9.4：导出文件统一命名「日期时间-用途-脚本」。v0.9.5（审核修复）：修「跨脚本镜像写爆浏览器存储」——本机镜像（bw_company_jobs / bw_job_addr / bw_insight_in）原来只增不减，写满 localStorage 5MB 后 setItem 抛配额异常被 catch 静默吞掉，镜像静默失效、还会拖垮同源下其它脚本的落盘。现在统一走带上限的写入：TTL 30 天 + 条数上限 800 + 总量 120 万字符，超了按时间淘汰；写不进去会在日志里明说「本机存储可能已满」，不再假装成功。修「删除岗位留下幽灵行」——从监控列表移除岗位时清了 signals 却没清 changelog，「待跟进」里会留下这个岗位的历史变更行、点进去指向已不存在的岗位；现已一并清理。修「不花钱也能把额度耗光」——卡片上的「收录」按钮原来绕过风控熔断与每日预算直接发详情请求，熔断期间照发、预算用完照发；现在两道闸都拦。修「重复扫描详情页 DOM」——同一岗位短时间内被反复扫描，现在按 jobId + DOM 节点数做 2 分钟缓存，并把扫描范围限定在详情容器内（上限 1500 个元素）。修「盯岗的 JD 常常是空的」——详情页数据已由页面钩子拿到时不额外发请求，优先用钩子里的 JD。修「多开标签页互相覆盖」——每个标签页有独立 ID，启动时登记，面板会区分「同一版本多开」与「版本不一致」两种情况。清理：删掉从没接通的「桌面通知」设置（含 @grant GM_notification 与相关开关）、无人调用的死代码、以及导出表里两列永远为空的 AI/风险列（面板文案同步改成实话）。v0.9.6：新增 GM 兼容适配层 —— 脚本不再只认篡改猴：篡改猴 / 暴力猴 / 脚本猫任选其一即可，甚至在完全没有脚本管理器时（把脚本直接注入页面）也能跑；缺的能力自动补齐（存储退化为 localStorage、同源请求改走 fetch、菜单退化为页面内 ⚙、样式退化为 style 标签；跨域 AI 功能仍需管理器）。装了管理器的用户行为与上一版完全一致 —— 适配层只补齐、不覆盖。新增「🔍 环境自检（兼容层）」菜单项，一眼看清当前跑在什么环境、哪些能力可用。
 // @author       weishiji668
 // @license      MIT
-// @homepageURL  https://github.com/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss
-// @supportURL   https://github.com/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss/issues
-// @updateURL    https://raw.githubusercontent.com/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss/main/boss-watcher.user.js
-// @downloadURL  https://raw.githubusercontent.com/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss/main/boss-watcher.user.js
+// @homepageURL  https://github.com/weishiji668/jiajianchengchu-boss
+// @supportURL   https://github.com/weishiji668/jiajianchengchu-boss/issues
+// @updateURL    https://raw.githubusercontent.com/weishiji668/jiajianchengchu-boss/main/boss-watcher.user.js
+// @downloadURL  https://raw.githubusercontent.com/weishiji668/jiajianchengchu-boss/main/boss-watcher.user.js
 // @match        https://www.zhipin.com/*
 // @match        https://*.zhipin.com/*
 // @run-at       document-start

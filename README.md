@@ -1,11 +1,11 @@
-# BOSS 求职脚本套件（用户脚本 / 油猴）<a id="top"></a>
+# 加减乘除boss · BOSS 求职脚本套件（用户脚本 / 油猴）<a id="top"></a>
 
-> 6 个跑在你自己浏览器里的求职辅助脚本：把招聘网站的职位列表，变成一条能**筛选 → 盯住 → 复盘 → 体检**的信息流。
+> 项目名「加减乘除boss」，GitHub 仓库名用拼音 `jiajianchengchu-boss`（GitHub 不支持中文仓库名）。6 个跑在你自己浏览器里的求职辅助脚本：把招聘网站的职位列表，变成一条能**筛选 → 盯住 → 复盘 → 体检**的信息流。
 > 全部只读；所有数据只存在你本机，项目没有任何服务端。（唯一会写账号、会替你发消息的「一键投递」不在本仓库分发，见 [安装说明](docs/install.md)。）
 
 ![总览](images/01-overview.png)
 
-[![CI](https://github.com/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss/actions/workflows/ci.yml/badge.svg)](https://github.com/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss/actions/workflows/ci.yml)
+[![CI](https://github.com/weishiji668/jiajianchengchu-boss/actions/workflows/ci.yml/badge.svg)](https://github.com/weishiji668/jiajianchengchu-boss/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
@@ -69,12 +69,12 @@
 
 | 脚本 | 安装 |
 | --- | --- |
-| 页面过滤 | [boss-filter.user.js](https://raw.githubusercontent.com/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss/main/boss-filter.user.js) |
-| 命中打标签 | [boss-tag.user.js](https://raw.githubusercontent.com/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss/main/boss-tag.user.js) |
-| 岗位监控 | [boss-watcher.user.js](https://raw.githubusercontent.com/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss/main/boss-watcher.user.js) |
-| 聊天助手 | [boss-chat.user.js](https://raw.githubusercontent.com/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss/main/boss-chat.user.js) |
-| 会话体检 | [boss-insight.user.js](https://raw.githubusercontent.com/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss/main/boss-insight.user.js) |
-| 一致性体检 | [boss-consist.user.js](https://raw.githubusercontent.com/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss/main/boss-consist.user.js) |
+| 页面过滤 | [boss-filter.user.js](https://raw.githubusercontent.com/weishiji668/jiajianchengchu-boss/main/boss-filter.user.js) |
+| 命中打标签 | [boss-tag.user.js](https://raw.githubusercontent.com/weishiji668/jiajianchengchu-boss/main/boss-tag.user.js) |
+| 岗位监控 | [boss-watcher.user.js](https://raw.githubusercontent.com/weishiji668/jiajianchengchu-boss/main/boss-watcher.user.js) |
+| 聊天助手 | [boss-chat.user.js](https://raw.githubusercontent.com/weishiji668/jiajianchengchu-boss/main/boss-chat.user.js) |
+| 会话体检 | [boss-insight.user.js](https://raw.githubusercontent.com/weishiji668/jiajianchengchu-boss/main/boss-insight.user.js) |
+| 一致性体检 | [boss-consist.user.js](https://raw.githubusercontent.com/weishiji668/jiajianchengchu-boss/main/boss-consist.user.js) |
 
 
 3. 打开职位列表页（例如 `https://www.zhipin.com/web/geek/job?query=...`），按 `Ctrl+Shift+R` 强刷一次。

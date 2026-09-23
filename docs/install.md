@@ -13,12 +13,12 @@
 
 | 脚本 | 安装 | 装它的理由 |
 | --- | --- | --- |
-| 页面过滤 | [boss-filter.user.js](https://raw.githubusercontent.com/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss/main/boss-filter.user.js) | 先把噪音挡掉，后面所有脚本都受益 |
-| 命中打标签 | [boss-tag.user.js](https://raw.githubusercontent.com/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss/main/boss-tag.user.js) | 只标记不隐藏，适合先观察 |
-| 岗位监控 | [boss-watcher.user.js](https://raw.githubusercontent.com/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss/main/boss-watcher.user.js) | 盯住心仪岗位的变化 |
-| 聊天助手 | [boss-chat.user.js](https://raw.githubusercontent.com/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss/main/boss-chat.user.js) | 会话归档 + 复盘导出 |
-| 会话体检 | [boss-insight.user.js](https://raw.githubusercontent.com/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss/main/boss-insight.user.js) | 风险词扫描 + 一键处置 |
-| 一致性体检 | [boss-consist.user.js](https://raw.githubusercontent.com/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss/main/boss-consist.user.js) | 卡片与正文矛盾 |
+| 页面过滤 | [boss-filter.user.js](https://raw.githubusercontent.com/weishiji668/jiajianchengchu-boss/main/boss-filter.user.js) | 先把噪音挡掉，后面所有脚本都受益 |
+| 命中打标签 | [boss-tag.user.js](https://raw.githubusercontent.com/weishiji668/jiajianchengchu-boss/main/boss-tag.user.js) | 只标记不隐藏，适合先观察 |
+| 岗位监控 | [boss-watcher.user.js](https://raw.githubusercontent.com/weishiji668/jiajianchengchu-boss/main/boss-watcher.user.js) | 盯住心仪岗位的变化 |
+| 聊天助手 | [boss-chat.user.js](https://raw.githubusercontent.com/weishiji668/jiajianchengchu-boss/main/boss-chat.user.js) | 会话归档 + 复盘导出 |
+| 会话体检 | [boss-insight.user.js](https://raw.githubusercontent.com/weishiji668/jiajianchengchu-boss/main/boss-insight.user.js) | 风险词扫描 + 一键处置 |
+| 一致性体检 | [boss-consist.user.js](https://raw.githubusercontent.com/weishiji668/jiajianchengchu-boss/main/boss-consist.user.js) | 卡片与正文矛盾 |
 > **第 7 个脚本（一键投递）不在本仓库分发**：`boss-deliver` 是唯一会写账号、也是唯一会替你发消息的脚本 —— 公开版只保留不代你操作账号的只读脚本。前 6 个脚本不依赖它，缺了它照常使用。如果你已经拿到 `boss-deliver.user.js`，按下面同样的方式装（它没有公开的 `@updateURL`，更新靠手动替换文件）。
 
 ## 第一次安装
@@ -46,8 +46,8 @@
 **拿脚本**：安装链接默认走 GitHub raw（国内时通时不通）。不稳就把域名换掉，路径完全一样：
 
 ```
-https://raw.githubusercontent.com/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss/main/boss-filter.user.js   ← 默认
-https://cdn.jsdelivr.net/gh/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss@main/boss-filter.user.js      ← jsDelivr 镜像（国内通常更快）
+https://raw.githubusercontent.com/weishiji668/jiajianchengchu-boss/main/boss-filter.user.js   ← 默认
+https://cdn.jsdelivr.net/gh/weishiji668/jiajianchengchu-boss@main/boss-filter.user.js      ← jsDelivr 镜像（国内通常更快）
 https://gitee.com/你的镜像仓库/raw/main/boss-filter.user.js          ← 自建 Gitee 镜像
 ```
 
