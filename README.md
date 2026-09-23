@@ -1,11 +1,11 @@
 # BOSS 求职脚本套件（用户脚本 / 油猴）<a id="top"></a>
 
 > 6 个跑在你自己浏览器里的求职辅助脚本：把招聘网站的职位列表，变成一条能**筛选 → 盯住 → 复盘 → 体检**的信息流。
-> 全部只读；所有数据只存在你本机，项目没有任何服务端。（唯一会写账号、会替你发消息的「一键投递」不在公开仓库分发，见 [安装说明](docs/install.md)。）
+> 全部只读；所有数据只存在你本机，项目没有任何服务端。（唯一会写账号、会替你发消息的「一键投递」不在本仓库分发，见 [安装说明](docs/install.md)。）
 
 ![总览](images/01-overview.png)
 
-[![CI](https://github.com/weishiji668/boss-zhipin-userscripts/actions/workflows/ci.yml/badge.svg)](https://github.com/weishiji668/boss-zhipin-userscripts/actions/workflows/ci.yml)
+[![CI](https://github.com/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss/actions/workflows/ci.yml/badge.svg)](https://github.com/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
@@ -36,7 +36,7 @@
    └─ ⑥ boss-consist  比对卡片小标签与详情正文，挑出「卡片写大专、正文要本科」这类矛盾
 ```
 
-6 个脚本之间**不联网通信**，全靠本机存储（`localStorage` + 油猴存储）与页面上的 `data-*` 标记协作，
+6 个脚本之间**不走服务器通信**，全靠本机存储（`localStorage` + 油猴存储）与页面上的 `data-*` 标记协作，
 协议细节见 [docs/architecture.md](docs/architecture.md)。
 
 ## 和「客户端型 / 授权型」工具的区别
@@ -45,7 +45,7 @@
 
 - **不接管账号**：没有服务器，Cookie 不出你的浏览器；
 - **不做检测规避**：不伪造指纹 / UA、不绕验证码，把节奏放在人手该有的尺度上；
-- **默认克制**：唯一写操作必须你手动点，每岗 10 秒、每日 50。
+- **默认克制**：公开版里唯一会改账号的是 `boss-insight` 的处置按钮，必须你手动点，另有每日上限与同会话冷却。
 
 完整对照（含可核实的事实与来源）见 [docs/positioning.md](docs/positioning.md)。
 
@@ -57,13 +57,10 @@
 | [boss-tag](docs/scripts/tag.md) | 命中打标签（只标记，不隐藏） | 职位列表页 | 只读 | 低 |
 | [boss-watcher](docs/scripts/watcher.md) | 岗位监控：建档 / 盯住 / 变更流水 | 职位列表页 + 详情页 | 只读（收录时发 2 次请求） | 低 |
 | [boss-chat](docs/scripts/chat.md) | 聊天归档、推进信号、导出复盘表 | 消息 / 聊天页 | 只读 | 低 |
-| [boss-insight](docs/scripts/insight.md) | 会话风险体检 + 一键处置 | 任意站点页面 | 只读 + 点击才写 | **中**（拉黑 / 删除不可逆） |
+| [boss-insight](docs/scripts/insight.md) | 会话风险体检 + 一键处置 | 招聘站任意页面 | 只读 + 点击才写 | **中**（拉黑 / 删除不可逆） |
 | [boss-consist](docs/scripts/consist.md) | 卡片标签 vs 详情正文一致性体检 | 职位相关页面 | 只读（补取详情要手动点） | 低 |
 
 > 每个脚本的权限、本机数据键、协同标记都在 `docs/scripts/` 下自动生成，跟代码保持一致。
-
-> **关于第 7 个脚本**：唯一会写账号、替你发消息的 `boss-deliver`（一键投递）**不在本仓库分发** —— 公开版只保留不代你操作账号的只读脚本。
-> 前 6 个脚本不依赖它，缺了它照常使用（列表页那个「投递本页」按钮本来就是它自己挂上去的）；`docs/architecture.md` 里仍保留它使用的协同标记，方便日后自己实现。
 
 ## 安装（约 1 分钟）
 
@@ -72,24 +69,23 @@
 
 | 脚本 | 安装 |
 | --- | --- |
-| 页面过滤 | [boss-filter.user.js](https://raw.githubusercontent.com/weishiji668/boss-zhipin-userscripts/main/boss-filter.user.js) |
-| 命中打标签 | [boss-tag.user.js](https://raw.githubusercontent.com/weishiji668/boss-zhipin-userscripts/main/boss-tag.user.js) |
-| 岗位监控 | [boss-watcher.user.js](https://raw.githubusercontent.com/weishiji668/boss-zhipin-userscripts/main/boss-watcher.user.js) |
-| 聊天助手 | [boss-chat.user.js](https://raw.githubusercontent.com/weishiji668/boss-zhipin-userscripts/main/boss-chat.user.js) |
-| 会话体检 | [boss-insight.user.js](https://raw.githubusercontent.com/weishiji668/boss-zhipin-userscripts/main/boss-insight.user.js) |
-| 一致性体检 | [boss-consist.user.js](https://raw.githubusercontent.com/weishiji668/boss-zhipin-userscripts/main/boss-consist.user.js) |
+| 页面过滤 | [boss-filter.user.js](https://raw.githubusercontent.com/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss/main/boss-filter.user.js) |
+| 命中打标签 | [boss-tag.user.js](https://raw.githubusercontent.com/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss/main/boss-tag.user.js) |
+| 岗位监控 | [boss-watcher.user.js](https://raw.githubusercontent.com/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss/main/boss-watcher.user.js) |
+| 聊天助手 | [boss-chat.user.js](https://raw.githubusercontent.com/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss/main/boss-chat.user.js) |
+| 会话体检 | [boss-insight.user.js](https://raw.githubusercontent.com/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss/main/boss-insight.user.js) |
+| 一致性体检 | [boss-consist.user.js](https://raw.githubusercontent.com/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss/main/boss-consist.user.js) |
 
 
 3. 打开职位列表页（例如 `https://www.zhipin.com/web/geek/job?query=...`），按 `Ctrl+Shift+R` 强刷一次。
-
-> 换仓库时三处要一起改：脚本头部（`npm run meta:set -- --owner <用户名> --repo <仓库名>`）、上面的安装链接、
-> 以及 `docs/install.md`。改完跑 `npm run check` —— `check:links` 会核对三处地址是否一致，并挡住 GitHub 建不出来的仓库名（例如中文名）。
 
 ### 一键投递不在本仓库
 
 第 7 个脚本 `boss-deliver`（一键投递：批量打招呼）**不在本仓库分发**。
 
 它和前 6 个不是一类：公开的 6 个只读你正在看的页面，而 `boss-deliver` 会**写你的账号**（批量发起打招呼），也是唯一会**替你发消息**的脚本。把它留在仓库外，公开版的边界就一直清楚 —— 装上这 6 个，不会有任何东西代你操作账号。
+
+前 6 个脚本不依赖它，缺了它照常使用（列表页那个「投递本页」按钮本来就是它自己挂上去的）；`docs/architecture.md` 里仍保留它使用的协同标记，方便日后自己实现。
 
 如果你手上已经有 `boss-deliver.user.js`，安装方式和前面一样：在管理器里新建脚本、整段粘贴、保存。它没有公开的 `@updateURL`，更新靠手动替换文件。用之前请先读 [docs/risk-and-safety.md](docs/risk-and-safety.md)：批量打招呼会撞站点限额，脚本自带每日上限与熔断，但风险由你自己承担。
 
@@ -105,8 +101,9 @@
 
 | 问题 | 事实 |
 | --- | --- |
-| 数据存在哪 | 你自己的浏览器（`localStorage` / 油猴存储）。项目没有服务器，不上传任何东西。 |
-| 什么时候发请求 | 只读脚本仅在你点按钮时请求页面；`boss-watcher` 收录一次发 2 次。公开的 6 个脚本都不会主动、周期性发请求。 |
+| 数据存在哪 | 你自己的浏览器（`localStorage` / 油猴存储）。项目没有服务器，也不把数据发给作者。 |
+| 什么时候发请求 | 只读脚本仅在你点按钮时请求页面；`boss-watcher` 收录一次发 2 次。公开的 6 个脚本都不会周期性发请求（`boss-watcher` 有个可选的「低频自动检查」，默认关闭）。 |
+| 开了 AI 判定，数据会去哪 | 只有你**自己**打开 AI 判定、并填好接口地址时，被判定那几条会话内容才会发到**你配置的那个 AI 接口**；不开就不会发。仓库里没有任何内置 key。 |
 | 需要 API Key 吗 | 只有可选的 AI 功能需要，且必须你自己填 —— 仓库里没有任何内置 key。 |
 | 怎么防止我误提交隐私数据 | 仓库自带 `tools/scan-private.cjs`，CI 每次都会扫本机路径 / 抓包文件 / 站方源码 / 疑似真实 key。 |
 
@@ -117,7 +114,7 @@
 **页面上出现两个一样的悬浮球？** 旧版本有过这个缺陷，现在已经修掉：脚本改成 DOM 级幂等 —— 页面里已经有 `#bcRoot` / `#biRoot` / `#bwPanel` 就复用，不会再挂第二个（聊天助手 v1.5.11、会话体检 v0.5.10 起）。
 如果版本号已经是最新却仍是两个球，那就是**同一个脚本装了两份**：两份的 `@name` + `@namespace` 不同，管理器会当成两个脚本同时跑、同时写同一批本机键。到管理器脚本列表里删掉多余那条即可。
 
-**面板数字不对？** 多标签页同时开着时，历史版本曾出现互相覆盖，现在写盘前都会先跟磁盘合并。若仍不一致，点一次「重新统计」。
+**面板数字不对？** 多标签页同时开着时，历史版本出现过互相覆盖；现在写盘前都会先跟磁盘上的数据合并，不再覆盖。若仍不一致：先 `Ctrl+Shift+R` 强刷一次；`boss-insight` 的面板里可以点「刷新会话」重读会话列表。
 
 **会被封号吗？** 有可能 —— 自动化行为本身就有风险。把风险降到最低的做法：求职专用账号、每天投递量压在自设上限内、
 不在公司网络用、不开调试端口。详见 [docs/risk-and-safety.md](docs/risk-and-safety.md)。
@@ -125,7 +122,7 @@
 **能改成自动翻页、自动投 500 个吗？** 不会做。本项目不接受提高批量投递速率、绕过风控验证、多账号代理池这类需求，
 相关 issue 会被直接关闭。
 
-**Q：一定要装篡改猴吗？换别的管理器行不行？**
+**一定要装篡改猴吗？换别的管理器行不行？**
 
 不用。脚本用的都是通用 GM 接口，v1.5.10 起对 **篡改猴 / 暴力猴 / 脚本猫** 都做了适配与自测：管理器给什么就用什么，缺的能力自己补（存储退化成 `localStorage`、同源请求走 `fetch`、菜单退化成页面内 `⚙`、样式退化成 `<style>`）。
 菜单里的「🔍 环境自检（兼容层）」会直接告诉你当前跑在什么环境、哪些能力可用。详见 [docs/install.md](docs/install.md)。
@@ -150,14 +147,16 @@ boss-*.user.js    6 个脚本本体（必须留在根目录：tests 按 ../boss-
 docs/             使用与设计文档（docs/scripts/ 由 tools/gen-script-docs.cjs 自动生成）
 images/           文档截图（本地模拟页，无真实账号信息）
 tests/            Playwright + Node 测试，全部走 mock，不访问真实站点
-tools/            开发与门禁：dev-server / check-syntax / verify-headers / scan-private / build-changelog / check-doc-links / set-repo-meta
+tools/            开发与门禁：dev-server / check-syntax / verify-headers / scan-private / build-changelog / gen-script-docs / check-doc-links / inline-compat / gm-compat / set-repo-meta / publish-release / publish-package
 .github/          CI 与 issue / PR 模板
 ```
 
 ### 发布检查单（维护者）
 
 ```bash
-npm run meta:set -- --owner <用户名> --repo <仓库名> --author <署名>   # 首次：写入 @homepageURL/@updateURL 等
+npm run meta:set -- --owner <用户名> --repo <仓库名> --author <署名>   # 换仓库/首次：写脚本头部的 4 个 URL
+#   换仓库时三处要一起改：脚本头部（上面这条）、README 的安装链接、docs/install.md；
+#   改完跑 npm run check —— check:links 会核对三处是否一致，并挡住 GitHub 建不出来的仓库名（例如中文名）
 npm run changelog                                                     # 版本号或说明改过就重跑
 npm run check && npm run check:headers:strict                         # 严格模式会拦住没替换的占位地址
 npm run test:all                                                      # 浏览器用例全绿

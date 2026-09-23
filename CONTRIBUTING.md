@@ -6,8 +6,8 @@
 ## 本地跑起来
 
 ```bash
-git clone https://github.com/<你的用户名>/boss-zhipin-userscripts.git
-cd boss-zhipin-userscripts
+git clone https://github.com/<你的用户名>/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss.git
+cd %E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss
 npm install                # 只为跑测试；脚本本身零依赖
 npm run dev                # 起本地安装服务（默认 http://127.0.0.1:8899/）
 ```

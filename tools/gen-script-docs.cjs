@@ -118,7 +118,8 @@ for (const f of files) {
 
   const outPath = path.join(OUTDIR, slug + ".md");
   const text = lines.join("\n");
-  if (CHECK) { const cur = fs.existsSync(outPath) ? fs.readFileSync(outPath, "utf8") : ""; if (cur !== text) drifted.push("docs/scripts/" + slug + ".md"); }
+  // 同上：比对前统一行尾（Windows 磁盘是 CRLF，生成的是 LF）
+  if (CHECK) { const cur = fs.existsSync(outPath) ? fs.readFileSync(outPath, "utf8").replace(/\r\n/g, "\n") : ""; if (cur !== text) drifted.push("docs/scripts/" + slug + ".md"); }
   else fs.writeFileSync(outPath, text, "utf8");
   index.push({ slug, name, ver, f });
   console.log((CHECK ? "[check] " : "[write] ") + "docs/scripts/" + slug + ".md   (" + name + " v" + ver + ")");
@@ -130,7 +131,7 @@ idx.push("");
 const idxText = idx.join("\n");
 const idxPath = path.join(OUTDIR, "README.md");
 if (CHECK) {
-  const cur = fs.existsSync(idxPath) ? fs.readFileSync(idxPath, "utf8") : "";
+  const cur = fs.existsSync(idxPath) ? fs.readFileSync(idxPath, "utf8").replace(/\r\n/g, "\n") : "";
   if (cur !== idxText) drifted.push("docs/scripts/README.md");
   if (drifted.length) { console.log("[FAIL] 生成的脚本文档已过期（跑 node tools/gen-script-docs.cjs 重新生成）："); for (const d of drifted) console.log("  · " + d); process.exit(1); }
   console.log("[OK] docs/scripts 与脚本头部一致（" + index.length + " 个脚本）");

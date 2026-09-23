@@ -86,7 +86,9 @@ for (const f of files) {
 const text = out.join("\n").replace(/\n{3,}/g, "\n\n") + "\n";
 
 if (CHECK) {
-  const cur = fs.existsSync(OUT) ? fs.readFileSync(OUT, "utf8") : "";
+  // 比对前统一行尾：Windows 上 core.autocrlf=true 时磁盘里是 CRLF，而生成的是 LF。
+  // 不统一的话本地永远报「已过期」而 CI（Linux）是绿的 —— 实测踩过。
+  const cur = fs.existsSync(OUT) ? fs.readFileSync(OUT, "utf8").replace(/\r\n/g, "\n") : "";
   if (cur === text) { console.log("[OK] CHANGELOG.md 与脚本头部一致"); process.exit(0); }
   console.log("[FAIL] CHANGELOG.md 已过期（跑 node tools/build-changelog.cjs 重新生成）");
   process.exit(1);

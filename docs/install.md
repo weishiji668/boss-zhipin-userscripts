@@ -13,17 +13,17 @@
 
 | 脚本 | 安装 | 装它的理由 |
 | --- | --- | --- |
-| 页面过滤 | [boss-filter.user.js](https://raw.githubusercontent.com/weishiji668/boss-zhipin-userscripts/main/boss-filter.user.js) | 先把噪音挡掉，后面所有脚本都受益 |
-| 命中打标签 | [boss-tag.user.js](https://raw.githubusercontent.com/weishiji668/boss-zhipin-userscripts/main/boss-tag.user.js) | 只标记不隐藏，适合先观察 |
-| 岗位监控 | [boss-watcher.user.js](https://raw.githubusercontent.com/weishiji668/boss-zhipin-userscripts/main/boss-watcher.user.js) | 盯住心仪岗位的变化 |
-| 聊天助手 | [boss-chat.user.js](https://raw.githubusercontent.com/weishiji668/boss-zhipin-userscripts/main/boss-chat.user.js) | 会话归档 + 复盘导出 |
-| 会话体检 | [boss-insight.user.js](https://raw.githubusercontent.com/weishiji668/boss-zhipin-userscripts/main/boss-insight.user.js) | 风险词扫描 + 一键处置 |
-| 一致性体检 | [boss-consist.user.js](https://raw.githubusercontent.com/weishiji668/boss-zhipin-userscripts/main/boss-consist.user.js) | 卡片与正文矛盾 |
+| 页面过滤 | [boss-filter.user.js](https://raw.githubusercontent.com/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss/main/boss-filter.user.js) | 先把噪音挡掉，后面所有脚本都受益 |
+| 命中打标签 | [boss-tag.user.js](https://raw.githubusercontent.com/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss/main/boss-tag.user.js) | 只标记不隐藏，适合先观察 |
+| 岗位监控 | [boss-watcher.user.js](https://raw.githubusercontent.com/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss/main/boss-watcher.user.js) | 盯住心仪岗位的变化 |
+| 聊天助手 | [boss-chat.user.js](https://raw.githubusercontent.com/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss/main/boss-chat.user.js) | 会话归档 + 复盘导出 |
+| 会话体检 | [boss-insight.user.js](https://raw.githubusercontent.com/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss/main/boss-insight.user.js) | 风险词扫描 + 一键处置 |
+| 一致性体检 | [boss-consist.user.js](https://raw.githubusercontent.com/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss/main/boss-consist.user.js) | 卡片与正文矛盾 |
 > **第 7 个脚本（一键投递）不在本仓库分发**：`boss-deliver` 是唯一会写账号、也是唯一会替你发消息的脚本 —— 公开版只保留不代你操作账号的只读脚本。前 6 个脚本不依赖它，缺了它照常使用。如果你已经拿到 `boss-deliver.user.js`，按下面同样的方式装（它没有公开的 `@updateURL`，更新靠手动替换文件）。
 
 ## 第一次安装
 
-1. 点上面的安装链接，篡改猴会弹出安装页 → 点「安装」。
+1. 点上面的安装链接，你装的那个管理器会弹出安装页 → 点「安装」。
 2. 打开职位列表页，例如 `https://www.zhipin.com/web/geek/job?query=后端`。
 3. 按 `Ctrl+Shift+R` **强刷**一次（页面里如果已经注入过旧版，普通刷新不会替换）。
 4. 左下角应出现状态条（`boss-filter` / `boss-tag`），右下角出现悬浮球（💼 监控 / 💬 聊天 / 🩺 体检）。装了私有的投递脚本还会多一个 📤。
@@ -46,8 +46,8 @@
 **拿脚本**：安装链接默认走 GitHub raw（国内时通时不通）。不稳就把域名换掉，路径完全一样：
 
 ```
-https://raw.githubusercontent.com/weishiji668/boss-zhipin-userscripts/main/boss-filter.user.js   ← 默认
-https://cdn.jsdelivr.net/gh/weishiji668/boss-zhipin-userscripts@main/boss-filter.user.js      ← jsDelivr 镜像（国内通常更快）
+https://raw.githubusercontent.com/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss/main/boss-filter.user.js   ← 默认
+https://cdn.jsdelivr.net/gh/weishiji668/%E5%8A%A0%E5%87%8F%E4%B9%98%E9%99%A4boss@main/boss-filter.user.js      ← jsDelivr 镜像（国内通常更快）
 https://gitee.com/你的镜像仓库/raw/main/boss-filter.user.js          ← 自建 Gitee 镜像
 ```
 
@@ -87,13 +87,13 @@ https://gitee.com/你的镜像仓库/raw/main/boss-filter.user.js          ← �
 
 ## 升级
 
-- 脚本头部带了 `@updateURL`，篡改猴会定期检查更新；也可以手动「检查用户脚本更新」。
-- 或直接点本文档里的安装链接 → 篡改猴会显示「更新」而不是「安装」。
+- 脚本头部带了 `@updateURL`，管理器会定期检查更新；也可以手动「检查用户脚本更新」。
+- 或直接点本文档里的安装链接 → 管理器会显示「更新」而不是「安装」。
 - **升级后务必 `Ctrl+Shift+R` 强刷**：已经打开着的页面里跑的还是旧版。
 
 ## 从更早的本地版本迁移
 
-如果你之前装过我自己本地开发时的旧版脚本（或从别的仓库/文件夹装的同名脚本），请先看 [migrate-v1.md](migrate-v1.md) ——
+如果你之前装过早期本地开发版的旧脚本（或从别的仓库 / 文件夹装的同名脚本），请先看 [migrate-v1.md](migrate-v1.md) ——
 **直接覆盖安装会出现「两份脚本同时运行」**，表现为两个相同的悬浮球、同一份数据被两边反复写。
 
 ## 卸载与清数据
@@ -113,6 +113,6 @@ https://gitee.com/你的镜像仓库/raw/main/boss-filter.user.js          ← �
 | --- | --- | --- |
 | 完全没反应 | 没强刷 / 脚本未启用 / 站点改版 | 检查油猴里脚本是否为启用状态 → `Ctrl+Shift+R` → 再看自检提示 |
 | 面板提示「页面世界钩子未注入」 | 页面里跑的是旧版（或注入时机太早） | 强刷一次；仍不行请看 console 报错并开 issue |
-| 出现两个相同的悬浮球 | 同一个脚本装了两份 | 到油猴脚本列表里删掉多余那条（见 [migrate-v1.md](migrate-v1.md)） |
+| 出现两个相同的悬浮球 | 旧版缺陷（已修）或同一个脚本装了两份 | 先确认版本号是最新；仍有两个球就到管理器脚本列表里删掉多余那条（见 [migrate-v1.md](migrate-v1.md)） |
 | 状态条显示 0 / 0 | 选择器过期（站点改版） | 用「站点改版」issue 模板反馈 |
 | 多标签页数字不一致 | 历史版本的覆盖问题（现已修） | 更新到最新版；仍然不一致请附上两个标签页的版本号 |
