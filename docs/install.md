@@ -19,7 +19,7 @@
 | 聊天助手 | [boss-chat.user.js](https://raw.githubusercontent.com/weishiji668/boss-zhipin-userscripts/main/boss-chat.user.js) | 会话归档 + 复盘导出 |
 | 会话体检 | [boss-insight.user.js](https://raw.githubusercontent.com/weishiji668/boss-zhipin-userscripts/main/boss-insight.user.js) | 风险词扫描 + 一键处置 |
 | 一致性体检 | [boss-consist.user.js](https://raw.githubusercontent.com/weishiji668/boss-zhipin-userscripts/main/boss-consist.user.js) | 卡片与正文矛盾 |
-> **第 7 个脚本（一键投递）不在本仓库分发**：`boss-deliver` 是唯一会写账号、也是唯一会替你发消息的脚本，只私下交给信任的人。前 6 个脚本不依赖它，缺了它照常使用。拿到 `boss-deliver.user.js` 后按下面同样的方式安装（它没有公开的 `@updateURL`，手动更新即可）。
+> **第 7 个脚本（一键投递）不在本仓库分发**：`boss-deliver` 是唯一会写账号、也是唯一会替你发消息的脚本 —— 公开版只保留不代你操作账号的只读脚本。前 6 个脚本不依赖它，缺了它照常使用。如果你已经拿到 `boss-deliver.user.js`，按下面同样的方式装（它没有公开的 `@updateURL`，更新靠手动替换文件）。
 
 ## 第一次安装
 
