@@ -1,0 +1,23 @@
+name: Release
+
+# 发版只认 .release/ 目录：改完 push 就自动建 Release（用 Actions 自带的仓库令牌，
+# 不需要任何人的个人令牌，也不需要登录）。
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".release/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 发布 Release（按 .release/release.json + notes.md）
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node tools/publish-release.cjs

@@ -157,7 +157,10 @@ npm run meta:set -- --owner <用户名> --repo <仓库名> --author <署名>   #
 npm run changelog                                                     # 版本号或说明改过就重跑
 npm run check && npm run check:headers:strict                         # 严格模式会拦住没替换的占位地址
 npm run test:all                                                      # 浏览器用例全绿
-git tag v2026.09.23 && git push --tags                                # 打标签 → 写 Release
+# 发版：改 .release/release.json（tag / title）与 .release/notes.md，push 到 main 即可
+# → 工作流 .github/workflows/release.yml 用 Actions 自带的仓库令牌自动建 Release，
+#   不需要个人令牌、不需要登录；重复 push 同一 tag 会更新标题与说明而不是报错
+node tools/publish-release.cjs --dry                                  # 本地先看一眼要发什么
 ```
 
 ## 参考与致谢
