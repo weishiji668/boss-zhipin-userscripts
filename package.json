@@ -1,0 +1,37 @@
+{
+  "name": "boss-zhipin-userscripts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "面向 BOSS直聘 网页的求职辅助油猴脚本集合：页面过滤 / 命中打标签 / 岗位监控 / 聊天归档 / 会话体检 / 一致性体检。数据默认只存本机。",
+  "keywords": ["userscript", "tampermonkey", "job-hunting", "zhipin"],
+  "license": "MIT",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "dev": "node tools/dev-server.cjs",
+    "check": "npm run check:syntax && npm run check:headers && npm run check:private && npm run check:changelog && npm run check:docs && npm run check:compat",
+    "check:syntax": "node tools/check-syntax.cjs",
+    "check:compat": "node tools/inline-compat.cjs --check",
+    "check:headers": "node tools/verify-headers.cjs",
+    "check:headers:strict": "node tools/verify-headers.cjs --strict",
+    "check:private": "node tools/scan-private.cjs",
+    "check:changelog": "node tools/build-changelog.cjs --check",
+    "check:docs": "node tools/gen-script-docs.cjs --check",
+    "changelog": "node tools/build-changelog.cjs",
+    "meta:set": "node tools/set-repo-meta.cjs",
+    "test": "node tests/test_core.js",
+    "test:compat": "node tests/test_compat.cjs",
+    "test:e2e": "node tests/test_e2e.cjs",
+    "test:filter": "node tests/test_filter.cjs",
+    "test:tag": "node tests/test_tag.cjs",
+    "test:insight": "node tests/test_insight.cjs",
+    "test:insight-chat": "node tests/test_insight_chat.cjs",
+    "test:no-manager": "node tests/test_no_manager.cjs",
+    "test:consist": "node tests/test_consist.cjs",
+    "test:xlsx": "node tests/test_xlsx.cjs",
+    "test:dashboard": "node tests/test_dashboard.cjs",
+    "test:all": "node tests/test_core.js && node tests/test_xlsx.cjs && node tests/test_e2e.cjs && node tests/test_dashboard.cjs && node tests/test_filter.cjs && node tests/test_insight.cjs && node tests/test_insight_chat.cjs && node tests/test_tag.cjs && node tests/test_consist.cjs && node tests/test_no_manager.cjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
+  }
+}

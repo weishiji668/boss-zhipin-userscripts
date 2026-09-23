@@ -1,0 +1,14 @@
+{
+  "//": "扫描器的检测特征。这里出现这些字符串是故意的 —— 它的工作就是检测它们；本文件在扫描时按文件名跳过。",
+  "//2": "type: path = 本机绝对路径（Windows/类 Unix 用户目录）；includes = 命中任一（mode=all 时要求全部命中）；regex = 正则任一命中。",
+  "soft": ["bst=", "Zp_token", "Bearer ", "securityId", "encryptJobId", "@connect", "GM_xmlhttpRequest"],
+  "hard": [
+    { "name": "本机绝对路径", "type": "path" },
+    { "name": "调试浏览器 profile", "type": "includes", "patterns": ["OpenWorkDebug"] },
+    { "name": "真实抓包文件", "type": "includes", "patterns": ["captured.json", "raw-cdp-events"] },
+    { "name": "站方前端源码片段", "type": "includes", "patterns": ["security-polyfill", "passport-security", "geek-security", "warlock.js"] },
+    { "name": "私钥文件头", "type": "includes", "mode": "all", "patterns": ["-----BEGIN", "PRIVATE KEY"] },
+    { "name": "疑似真实 API Key", "type": "regex", "patterns": ["[^A-Za-z0-9]sk-[A-Za-z0-9_-]{20,}"] },
+    { "name": "环境变量赋值", "type": "regex", "patterns": ["^[A-Z0-9_]{3,}_(KEY|TOKEN|SECRET)[ \\t]*=[ \\t]*[^ \\t]"] }
+  ]
+}

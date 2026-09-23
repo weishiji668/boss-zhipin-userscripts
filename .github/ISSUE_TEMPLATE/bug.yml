@@ -1,0 +1,58 @@
+name: 功能异常 / 报错
+description: 脚本没按预期工作（选择器失效请用另一个模板）
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: script
+    attributes:
+      label: 哪个脚本
+      options:
+        - boss-filter 页面过滤
+        - boss-tag 命中打标签
+        - boss-watcher 岗位监控
+        - boss-chat 聊天助手
+        - boss-insight 会话体检与处置
+        - boss-consist 一致性体检
+        - 其他（请说明；注意「一键投递」不在本仓库分发）
+        - 不确定 / 多个脚本一起
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: 脚本版本
+      description: 面板标题或脚本头部 @version，例如 v1.3.0
+      placeholder: v1.3.0
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: 现象
+      description: 期望发生什么、实际发生了什么。若是「面板数字不对」，请一起说说当时的操作顺序。
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: 复现步骤
+      placeholder: |
+        1. 打开 https://www.zhipin.com/web/geek/job?query=xxx
+        2. 点开面板 → 点「重新统计」
+        3. 看到……
+    validations:
+      required: true
+  - type: textarea
+    id: env
+    attributes:
+      label: 环境
+      description: 浏览器 + 用户脚本管理器（篡改猴 / Violentmonkey + 版本）。控制台报错请贴文字，不要只发截图。
+      placeholder: Chrome 141 + Tampermonkey 5.5.0
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: 隐私确认
+      options:
+        - label: 我确认没有粘贴 token / cookie / 带个人信息的接口响应（值都替换成了 xxx）
+          required: true

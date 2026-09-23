@@ -1,0 +1,31 @@
+# 依赖与构建产物
+node_modules/
+dist/
+coverage/
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 下划线开头的临时/调试脚本（曾经有一个 _probe.cjs 差点被一起公开）
+_*.cjs
+_*.js
+
+# 本地跑测试的临时输出（历史上这些文件曾被误提交）
+tests_out_*.txt
+v0*_*.txt
+*.log
+
+# 绝对不要提交：抓包、站点源码、密钥
+captured.json
+raw-cdp-events.json
+.env
+.env.*
+*.pem
+*.key
+
+# Playwright 浏览器缓存（如果选择装到仓库里）
+.playwright/

@@ -1,0 +1,24 @@
+第三方参考与致谢
+================
+
+本项目在实现过程中参考过下列开源项目的**做法与接口语义**（不是抄代码）：
+
+1. Ocyss/boss-helper  ──  https://github.com/Ocyss/boss-helper
+   许可证：MIT（Copyright (c) 2024 Ocyss(git@ocyss.icu)）
+   参考点：
+     · 用页面 Vue 2 组件实例（元素上的 __vue__）读取 jobList / securityId 的取数思路
+     · 「您今天已与 120 位 BOSS 沟通」弹窗先确认再带 cid=1 重试、150 位当日熔断的限额语义
+     · 「重复沟通」过滤口径（相同公司 / 相同 HR 只算一次）
+
+   复核结论（2026-09-23，逐行比对 Ocyss/boss-helper 的 79 个源文件 与 本项目 7 个脚本）：
+   · 归一化后长度 ≥25 的完全相同的代码行：0 行
+   · 完全相同的注释行：14 行，全部是 ==UserScript== / ==/UserScript== 这种用户脚本样板
+   · 共享的字符串字面量（≥12 字符）：3 条，均为通用值（application/json、deepseek-chat 等）
+   · 共享标识符：均属站点字段名（securityId / encryptJobId / bossName …）或通用 DOM/JS 词汇
+   因此本项目属于「思路级借鉴、未复制代码」。为稳妥起见仍在此明确致谢；
+   若后续确需引用其代码片段，请把其 MIT 全文一并放入 third_party/boss-helper-LICENSE。
+
+2. 站点接口与字段名（/wapi/...、securityId、Zp_token 等）属于技术事实，不是第三方代码。
+   本项目不包含任何站点前端源码、也不包含真实抓包数据。
+
+免责声明见 README.md。本项目与 BOSS直聘（看准网）无任何关联。

@@ -1,0 +1,42 @@
+name: 站点改版导致失效
+description: 页面明明有岗位卡片，脚本却识别不到（选择器过期）
+title: "[改版] "
+labels: ["site-change"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        这个模板专门收「站点改版」类问题 —— 这类问题修起来最快，前提是信息齐。
+        `boss-filter` 会在「页面上有 ≥8 张卡片、但脚本识别到 0 张」时给出自检提示，那基本就确认是选择器过期。
+  - type: input
+    id: page
+    attributes:
+      label: 出问题的页面地址
+      placeholder: https://www.zhipin.com/web/geek/job?query=xxx&city=101280600
+    validations:
+      required: true
+  - type: input
+    id: date
+    attributes:
+      label: 大概什么时候开始的
+      placeholder: 2026-09-24 早上开始
+  - type: textarea
+    id: signal
+    attributes:
+      label: 你看到的现象
+      description: 例如「顶部出现自检提示条」「状态条显示已过滤 0 / 共 0」「面板显示本页可投 0，但页面明显有 20 个岗位」
+    validations:
+      required: true
+  - type: textarea
+    id: structure
+    attributes:
+      label: 页面结构片段（可选但很有用）
+      description: 在卡片上右键 → 检查，把卡片外层的标签与 class 结构贴出来。**不要贴含个人信息的截图。**
+      render: html
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: 隐私确认
+      options:
+        - label: 我确认没有粘贴 token / cookie / 带个人信息的接口响应
+          required: true

@@ -1,0 +1,23 @@
+name: 功能建议
+description: 想要的新能力，或想改掉的行为
+title: "[建议] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: 你想解决什么问题
+      description: 先说场景，再说你打算怎么改 —— 这样更容易找到更合适的实现方式。
+    validations:
+      required: true
+  - type: textarea
+    id: instead
+    attributes:
+      label: 你现在怎么绕过去的
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: 范围确认
+      options:
+        - label: 我理解本项目不接受「提高批量投递速度 / 绕过风控验证 / 多账号代理池」这类需求
+          required: true

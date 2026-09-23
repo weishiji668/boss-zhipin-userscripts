@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  # 第一道：不装任何依赖就能跑的门禁（脚本语法、头部元数据、私有内容、更新日志是否最新）
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: 语法门禁（7 个用户脚本）
+        run: node tools/check-syntax.cjs
+      - name: 头部元数据门禁
+        run: node tools/verify-headers.cjs
+      - name: 私有内容扫描（本机路径 / 抓包 / 站方源码 / 真实 key）
+        run: node tools/scan-private.cjs
+      - name: CHANGELOG 是否与脚本头部一致
+        run: node tools/build-changelog.cjs --check
+      - name: docs/scripts 是否与脚本头部一致
+        run: node tools/gen-script-docs.cjs --check
+      - name: GM 兼容层是否已内联到各脚本
+        run: node tools/inline-compat.cjs --check
+
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: 安装依赖
+        run: npm install --no-audit --no-fund
+      - name: 单元测试（纯 Node）
+        run: npm test
+      - name: GM 兼容层自测（有/无管理器两条路）
+        run: node tests/test_compat.cjs
+      - name: 安装 Playwright 浏览器
+        run: npx playwright install --with-deps chromium
+      - name: 浏览器用例（全部走 mock，不访问真实站点）
+        run: |
+          npm run test:filter
+          npm run test:tag
+          npm run test:consist
+          npm run test:insight
+          npm run test:insight-chat
+          npm run test:xlsx
+          npm run test:dashboard
+          npm run test:e2e
+          npm run test:no-manager

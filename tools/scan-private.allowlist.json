@@ -1,0 +1,15 @@
+{
+  "//": "登记放行的假数据（canary）。每条都写清为什么它不是真泄露；未登记的命中一律 fail。",
+  "allow": [
+    {
+      "file": "tests/verify_t3.cjs",
+      "rule": "疑似真实 API Key",
+      "note": "泄露检测用的假 key（sk-LEAKCANARY-...），变量名本身就是 DO-NOT-LEAK，用途是验证脚本不会把自己的 key 写进导出文件"
+    },
+    {
+      "file": "tools/debug-browser.cjs",
+      "rule": "疑似真实 API Key",
+      "note": "调试用假 key（sk-debug-not-a-real-key），只喂给本地 mock 页面，不连任何真实接口"
+    }
+  ]
+}

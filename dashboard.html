@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BOSS 求职助手 · 数据仪表盘</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f6f8fc;color:#1f2430;font:14px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:18px}
+.top{position:sticky;top:0;z-index:9;background:#fff;border-bottom:1px solid #e3e8f0}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 18px}
+.brand{font-size:16px;font-weight:700}
+.ver{font-size:12px;font-weight:400;color:#7a8396}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:none;background:#2f6bff;color:#fff;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit}
+.btn:hover{opacity:.9}
+.btn.ghost{background:#eef3ff;color:#274a9e}
+.btn.plain{background:#f1f4f9;color:#485063}
+.drop{background:#fff;border:2px dashed #c9d6ef;border-radius:14px;padding:34px 18px;text-align:center;color:#485063}
+.drop.on{border-color:#2f6bff;background:#f2f6ff}
+.drop b{display:block;font-size:15px;margin-bottom:6px;color:#1f2430}
+.hint{font-size:12px;color:#7a8396;margin-top:6px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:16px 0}
+.card{background:#fff;border:1px solid #e3e8f0;border-radius:12px;padding:12px 14px}
+.card b{display:block;font-size:22px;color:#2f6bff;line-height:1.3}
+.card span{font-size:12px;color:#7a8396}
+.card.warn b{color:#c2600a}
+.card.bad b{color:#dc2626}
+.sec{background:#fff;border:1px solid #e3e8f0;border-radius:12px;padding:14px 16px;margin-bottom:16px}
+.sec h2{margin:0 0 10px;font-size:15px;border-left:3px solid #2f6bff;padding-left:8px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.toolbar input,.toolbar select{padding:7px 10px;border:1px solid #e3e8f0;border-radius:8px;font:inherit;font-size:13px;background:#fff;color:#1f2430}
+.toolbar input{flex:1;min-width:180px}
+.t{width:100%;border-collapse:collapse;font-size:13px}
+.t th,.t td{padding:8px 10px;border-bottom:1px solid #eef1f6;text-align:left;vertical-align:top}
+.t th{background:#f8fafc;color:#7a8396;font-weight:600;white-space:nowrap}
+.t tr.row:hover{background:#f8fafc}
+.mut{color:#7a8396}
+.small{font-size:12px}
+.lv{display:inline-block;padding:1px 8px;border-radius:99px;font-size:11px;white-space:nowrap}
+.lv-high{background:#fee2e2;color:#dc2626}
+.lv-mid{background:#fff3e0;color:#c2600a}
+.lv-low{background:#dcfce7;color:#15803d}
+.lv-none{background:#f1f4f9;color:#7a8396}
+.tag{display:inline-block;background:#eef3ff;color:#274a9e;border-radius:6px;padding:1px 6px;font-size:11px;margin:2px 4px 2px 0}
+.empty{color:#7a8396;text-align:center;padding:18px 0}
+.det{background:#f8fafc}
+.det pre{white-space:pre-wrap;word-break:break-word;background:#fff;border:1px solid #e3e8f0;border-radius:8px;padding:10px;margin:6px 0 0;font-size:12px;font-family:ui-monospace,Consolas,monospace;max-height:260px;overflow:auto}
+.chg{padding:5px 0;border-bottom:1px dashed #eef1f6;font-size:12px}
+.chg:last-child{border-bottom:none}
+.chg .t1{color:#c2600a}
+.hist-wrap{display:flex;align-items:flex-end;gap:3px;height:112px;margin-top:4px}
+.hist-col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;height:100%}
+.hist-col .bar{width:100%;background:#7aa0ff;border-radius:3px 3px 0 0}
+.hist-col.peak .bar{background:#2f6bff}
+.hist-col .n{font-size:10px;color:#7a8396;text-align:center;margin-bottom:2px}
+.hist-x{display:flex;gap:3px;font-size:10px;color:#7a8396;margin-top:3px;border-top:1px solid #eef1f6;padding-top:3px}
+.hist-x span{flex:1;text-align:center}
+.log{border-left:2px solid #e3e8f0;padding:0 0 0 12px;margin:0}
+.log .item{position:relative;padding:6px 0}
+.log .item::before{content:"";position:absolute;left:-17px;top:14px;width:8px;height:8px;border-radius:50%;background:#2f6bff}
+.foot{color:#7a8396;font-size:12px;text-align:center;padding:8px 0 24px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="top"><div class="wrap">
+  <div class="brand">💼 BOSS 求职助手 · 数据仪表盘 <span class="ver">v0.2.0 · 纯本地，不上传</span></div>
+  <div class="acts">
+    <label class="btn">载入备份 JSON<input id="file" type="file" accept=".json,application/json" class="hidden"></label>
+    <button class="btn ghost" id="demo">载入示例数据</button>
+    <button class="btn plain" id="reset">清空</button>
+  </div>
+</div></div>
+
+<div class="wrap">
+  <div class="drop" id="drop">
+    <b>把「导出全部备份」得到的 JSON 拖到这里</b>
+    或在脚本面板里点 💼 → 设置 → 导出全部备份，再回到本页用右上角「载入备份 JSON」选择该文件
+    <div class="hint">解析全在本机浏览器完成，不会发往任何服务器</div>
+  </div>
+  <div id="dash" class="hidden">
+    <div class="cards" id="cards"></div>
+    <div class="sec">
+      <h2>岗位监控</h2>
+      <div class="toolbar">
+        <input id="q" placeholder="搜索岗位 / 公司">
+        <select id="fRisk"><option value="">全部风险</option><option value="high">高风险</option><option value="mid">中风险及以上</option><option value="low">低风险</option><option value="none">未评分</option></select>
+        <select id="fStatus"><option value="">全部状态</option><option value="在招">在招</option><option value="下线">下线</option><option value="下线(疑似)">下线(疑似)</option><option value="获取失败">获取失败</option></select>
+        <select id="fSort"><option value="recent">按最近更新</option><option value="risk">按风险分</option><option value="changes">按变更次数</option></select>
+      </div>
+      <div id="jobs"></div>
+    </div>
+    <div class="sec">
+      <h2>变更日志</h2>
+      <div id="changes"></div>
+    </div>
+    <div class="sec">
+      <h2>聊天统计</h2>
+      <div id="chatStats"></div>
+      <div class="cards" id="chatCards"></div>
+      <div id="chat"></div>
+      <h2 style="margin-top:14px">对方活跃时段</h2>
+      <div id="hist"></div>
+    </div>
+    <div class="sec">
+      <h2>风险命中</h2>
+      <div id="risk"></div>
+    </div>
+    <div class="sec">
+      <h2>会话明细</h2>
+      <div id="sessions"></div>
+    </div>
+  </div>
+  <div class="foot">数据来源：本地导出的 BOSS 求职助手备份 JSON。清空浏览器数据前记得先备份。</div>
+</div>
+
+<script>
+var DASH=null, UI={q:"",risk:"",status:"",sort:"recent",open:""};
+var SQ=String.fromCharCode(39), DQ=String.fromCharCode(34);
+
+function $(id){ return document.getElementById(id); }
+function esc(s){
+  var t=String(s===undefined||s===null?"":s);
+  t=t.split("&").join("&amp;").split("<").join("&lt;").split(">").join("&gt;");
+  t=t.split(DQ).join("&quot;").split(SQ).join("&#39;");
+  return t;
+}
+function toTs(v){
+  if(v===undefined||v===null||v==="") return 0;
+  if(typeof v==="number") return v<1e12?v*1000:v;
+  var n=Number(v);
+  if(!isNaN(n)&&String(v).trim()!=="") return n<1e12?n*1000:n;
+  var d=new Date(String(v).replace(/-/g,"/"));
+  return isNaN(d.getTime())?0:d.getTime();
+}
+function normText(s){
+  return String(s||"").toLowerCase()
+    .replace(/[\uFF01-\uFF5E]/g,function(c){ return String.fromCharCode(c.charCodeAt(0)-0xFEE0); })
+    .replace(/\s+/g,"")
+    .replace(/[\p{P}\p{S}]/gu,"")
+    .replace(/\d+/g,"#");
+}
+function fmtTime(v){ var t=toTs(v); return t?new Date(t).toLocaleString("zh-CN",{hour12:false}):"—"; }
+function pad2(n){ return String(n).padStart(2,"0"); }
+
+function firstReplyMinutes(s){
+  var msgs=(s.messages||[]).slice().sort(function(a,b){ return toTs(a.ts)-toTs(b.ts); });
+  var my=msgs.find(function(m){ return m.dir==="me"; });
+  if(!my) return null;
+  var t0=toTs(my.ts);
+  var th=msgs.find(function(m){ return m.dir==="them"&&toTs(m.ts)>t0; });
+  if(!th) return null;
+  return Math.round((toTs(th.ts)-t0)/60000);
+}
+function hourlyHistogram(sessions){
+  var h=new Array(24).fill(0);
+  sessions.forEach(function(s){
+    (s.messages||[]).forEach(function(m){
+      if(m.dir!=="them") return;
+      var t=toTs(m.ts); if(!t) return;
+      h[new Date(t).getHours()]++;
+    });
+  });
+  return h;
+}
+function clusterMessages(sessions,win){
+  var bySid=new Map();
+  sessions.forEach(function(s){ bySid.set(s.meta.sessionId,s); });
+  var my=[];
+  sessions.forEach(function(s){
+    (s.messages||[]).forEach(function(m){
+      if(m.dir==="me"&&m.text){
+        var t=toTs(m.ts);
+        if(t) my.push({sid:s.meta.sessionId, ts:t, text:m.text});
+      }
+    });
+  });
+  var groups=new Map();
+  my.forEach(function(m){
+    var k=normText(m.text).slice(0,50);
+    if(!k) return;
+    if(!groups.has(k)) groups.set(k,[]);
+    groups.get(k).push(m);
+  });
+  var out=[];
+  groups.forEach(function(msgs,k){
+    var replied=0;
+    msgs.forEach(function(m){
+      var s=bySid.get(m.sid);
+      if(!s) return;
+      if((s.messages||[]).some(function(x){ return x.dir==="them"&&toTs(x.ts)>m.ts&&toTs(x.ts)<=m.ts+win; })) replied++;
+    });
+    out.push({key:k, sample:msgs[0].text.slice(0,60), count:msgs.length, replied:replied, rate:Math.round(replied/msgs.length*100)});
+  });
+  return out.sort(function(a,b){ return b.count-a.count||b.rate-a.rate; });
+}
+function computeStats(sessions){
+  var total=0, me=0, them=0, replies=[];
+  sessions.forEach(function(s){
+    (s.messages||[]).forEach(function(m){ total++; if(m.dir==="me") me++; else them++; });
+    var fr=firstReplyMinutes(s);
+    if(fr!==null) replies.push(fr);
+  });
+  var avg=replies.length?Math.round(replies.reduce(function(a,b){ return a+b; },0)/replies.length):null;
+  return {sessions:sessions.length, total:total, me:me, them:them, avgFirstReply:avg, histogram:hourlyHistogram(sessions)};
+}
+
+function jobsArr(){
+  var d=DASH||{}, out=[];
+  Object.keys(d.jobs||{}).forEach(function(k){
+    var j=d.jobs[k];
+    if(!j||typeof j!=="object") return;
+    j.__id=k;
+    out.push(j);
+  });
+  return out;
+}
+function chatsArr(){
+  var d=DASH||{}, out=[];
+  Object.keys(d.chats||{}).forEach(function(k){
+    var s=d.chats[k];
+    if(!s||typeof s!=="object") return;
+    if(!s.meta) s.meta={sessionId:k};
+    if(!s.meta.sessionId) s.meta.sessionId=k;
+    out.push(s);
+  });
+  return out;
+}
+function riskOf(j){ return (j.risk&&j.risk.hits&&j.risk.hits.length)?j.risk:null; }
+function lvClass(level){ return level==="高"?"lv-high":level==="中"?"lv-mid":level==="低"?"lv-low":"lv-none"; }
+function riskBucket(j){
+  var r=riskOf(j);
+  if(!r) return "none";
+  return r.level==="高"?"high":r.level==="中"?"mid":r.level==="低"?"low":"none";
+}
+function jobLastTs(j){ return Math.max(toTs(j.last&&j.last.ts), toTs(j.first&&j.first.ts), 0); }
+function lastChangeText(j){
+  var c=j.changes&&j.changes[0];
+  return c&&c.changes&&c.changes.length?c.changes[0]:"—";
+}
+
+function renderCards(){
+  var jobs=jobsArr(), chats=chatsArr(), st=computeStats(chats);
+  var d=DASH||{};
+  var risky=jobs.filter(function(j){ var b=riskBucket(j); return b==="high"||b==="mid"; }).length;
+  var high=jobs.filter(function(j){ return riskBucket(j)==="high"; }).length;
+  var hits=(d.riskHits||[]).length;
+  var changes=(d.changelog||[]).length;
+  var html="";
+  html+="<div class=card><b>"+jobs.length+"</b><span>监控岗位</span></div>";
+  html+="<div class='card "+(risky?"warn":"")+"'><b>"+risky+"</b><span>中高风险岗位（高 "+high+"）</span></div>";
+  html+="<div class=card><b>"+changes+"</b><span>变更记录</span></div>";
+  html+="<div class=card><b>"+st.sessions+"</b><span>会话</span></div>";
+  html+="<div class=card><b>"+st.total+"</b><span>消息（我 "+st.me+" / 对方 "+st.them+"）</span></div>";
+  html+="<div class='card "+(hits?"bad":"")+"'><b>"+hits+"</b><span>风险命中记录</span></div>";
+  $("cards").innerHTML=html;
+}
+
+function renderJobs(){
+  var all=jobsArr();
+  var q=UI.q.trim().toLowerCase();
+  var list=all.filter(function(j){
+    var m=j.meta||{};
+    if(q){
+      var hay=(String(m.name||"")+" "+String(m.company||"")+" "+String(m.city||"")).toLowerCase();
+      if(hay.indexOf(q)<0) return false;
+    }
+    if(UI.risk){
+      var b=riskBucket(j);
+      if(UI.risk==="mid"){ if(b!=="high"&&b!=="mid") return false; }
+      else if(b!==UI.risk) return false;
+    }
+    if(UI.status){
+      var s=(j.last&&j.last.status)||"在招";
+      if(s!==UI.status) return false;
+    }
+    return true;
+  });
+  list.sort(function(a,b){
+    if(UI.sort==="risk") return ((riskOf(b)||{}).score||0)-((riskOf(a)||{}).score||0)||jobLastTs(b)-jobLastTs(a);
+    if(UI.sort==="changes") return ((b.changes||[]).length)-((a.changes||[]).length)||jobLastTs(b)-jobLastTs(a);
+    return jobLastTs(b)-jobLastTs(a);
+  });
+  if(!list.length){
+    $("jobs").innerHTML="<div class=empty>"+(all.length?"没有符合筛选条件的岗位":"暂无岗位数据。正常浏览 BOSS 搜索列表 / 岗位详情后会自动建档。")+"</div>";
+    return;
+  }
+  var html="<table class=t><tr><th>公司 / 岗位</th><th>薪资</th><th>状态</th><th>风险</th><th>变更</th><th>最近更新</th><th></th></tr>";
+  list.forEach(function(j){
+    var m=j.meta||{}, r=riskOf(j);
+    var risk=r?("<span class='lv "+lvClass(r.level)+"'>"+esc(r.level)+" "+r.score+"</span>"):"<span class=lv-none>—</span>";
+    var det="";
+    if(UI.open&&UI.open===j.__id){
+      var snaps=(j.snapshots||[]).slice().reverse().map(function(s){
+        return "<div class=chg><span class=mut>"+esc(fmtTime(s.ts))+"</span> · "+esc(s.salary||"空")+" · "+esc(s.status||"")+"</div>";
+      }).join("");
+      var chgs=(j.changes||[]).map(function(c){
+        return "<div class=chg><span class=mut>"+esc(fmtTime(c.ts))+"</span><div class=t1>"+esc((c.changes||[]).join("；"))+"</div></div>";
+      }).join("");
+      det="<tr class=det><td colspan=7>"+
+        "<div class=small><b>公司</b> "+esc(m.company||"—")+"　<b>城市</b> "+esc(m.city||"—")+"　<b>经验</b> "+esc(m.exp||"—")+"　<b>学历</b> "+esc(m.edu||"—")+"　<b>Boss</b> "+esc(m.boss||"—")+"</div>"+
+        (m.url?"<div class=small><a href='"+esc(m.url)+"' target=_blank rel=noreferrer>打开原岗位页</a></div>":"")+
+        (r?("<div class=small style='margin-top:6px'>风险命中："+r.hits.map(function(h){ return "<span class=tag>"+esc(h.name)+" +"+esc(h.weight||"")+"</span>"; }).join("")+"</div>"):"")+
+        "<div class=small style='margin-top:8px'><b>当前 JD</b></div><pre>"+esc((j.last&&j.last.jd)||"（无 JD 数据）")+"</pre>"+
+        "<div class=small style='margin-top:8px'><b>快照历史（"+((j.snapshots||[]).length)+"）</b></div>"+(snaps||"<div class=mut>—</div>")+
+        "<div class=small style='margin-top:8px'><b>变更历史（"+((j.changes||[]).length)+"）</b></div>"+(chgs||"<div class=mut>—</div>")+
+        "</td></tr>";
+    }
+    html+="<tr class=row>"+
+      "<td><b>"+esc(m.name||"(未知岗位)")+"</b><br><span class=mut>"+esc(m.company||"")+"</span></td>"+
+      "<td>"+esc((j.last&&j.last.salary)||"—")+"</td>"+
+      "<td>"+esc((j.last&&j.last.status)||"—")+"</td>"+
+      "<td>"+risk+"</td>"+
+      "<td class=mut>"+esc(lastChangeText(j))+"</td>"+
+      "<td class=mut>"+esc(fmtTime(j.last&&j.last.ts))+"</td>"+
+      "<td><button class='btn plain small' data-act=open data-id='"+esc(j.__id)+"'>"+(UI.open===j.__id?"收起":"详情")+"</button></td></tr>"+det;
+  });
+  html+="</table>";
+  $("jobs").innerHTML=html;
+}
+
+function renderChanges(){
+  var list=(DASH&&DASH.changelog)||[];
+  if(!list.length){ $("changes").innerHTML="<div class=empty>暂无变更记录。开启定时检查或手动「立即检查」后，薪资 / JD / 下线变化会记录在这里。</div>"; return; }
+  var html="<div class=log>";
+  list.slice(0,100).forEach(function(c){
+    html+="<div class=item><span class=mut>"+esc(fmtTime(c.ts))+"</span> <b>"+esc(c.jobName||"—")+"</b>"+
+      (c.company?" <span class=mut>("+esc(c.company)+")</span>":"")+
+      "<div class=t1>"+esc((c.changes||[]).join("；"))+"</div></div>";
+  });
+  html+="</div>";
+  $("changes").innerHTML=html;
+}
+
+function renderChat(){
+  var sessions=chatsArr();
+  var st=computeStats(sessions);
+  var win=24*3600*1000;
+  if(DASH&&DASH.settings&&DASH.settings.chat&&DASH.settings.chat.replyWindowHours) win=DASH.settings.chat.replyWindowHours*3600*1000;
+  var clusters=clusterMessages(sessions,win);
+  $("chatCards").innerHTML=
+    "<div class=card><b>"+st.sessions+"</b><span>会话</span></div>"+
+    "<div class=card><b>"+st.total+"</b><span>消息（我 "+st.me+" / 对方 "+st.them+"）</span></div>"+
+    "<div class=card><b>"+(st.avgFirstReply===null?"—":st.avgFirstReply+" 分钟")+"</b><span>平均首响</span></div>"+
+    "<div class=card><b>"+clusters.length+"</b><span>话术组</span></div>";
+  var html="<div class=small style='margin-bottom:6px'><b>话术回复率 TOP</b> <span class=mut>（我发出的消息，在 "+Math.round(win/3600000)+" 小时内是否收到回复）</span></div>";
+  if(!clusters.length){
+    html+="<div class=empty>暂无可统计的话术。脚本只统计「我发出」的消息，先在 BOSS 里正常聊几句再导出。</div>";
+  }else{
+    html+="<table class=t><tr><th>发送次数</th><th>回复率</th><th>话术样本</th><th>已回复</th></tr>";
+    clusters.slice(0,20).forEach(function(c){
+      var col=c.rate>=50?"#16a34a":c.rate>=25?"#ea8a00":"#dc2626";
+      html+="<tr><td>"+c.count+"</td><td style=color:"+col+";font-weight:600>"+c.rate+"%</td><td>"+esc(c.sample)+"</td><td class=mut>"+c.replied+"</td></tr>";
+    });
+    html+="</table>";
+  }
+  $("chat").innerHTML=html;
+  var max=Math.max(1,Math.max.apply(null,st.histogram));
+  var bars="", xs="";
+  for(var i=0;i<24;i++){
+    var n=st.histogram[i], peak=(n>0&&n===max);
+    bars+="<div class='hist-col"+(peak?" peak":"")+"' title=\""+pad2(i)+":00 · "+n+" 条\">"+
+      (n?"<span class=n>"+n+"</span>":"")+
+      "<div class=bar style=height:"+(n?Math.max(Math.round(n/max*100),3):0)+"%></div></div>";
+    xs+="<span>"+(i%3===0?pad2(i):"")+"</span>";
+  }
+  $("hist").innerHTML="<div class=hist-wrap>"+bars+"</div><div class=hist-x>"+xs+"</div>";
+}
+
+function renderRisk(){
+  var d=DASH||{};
+  var hits=(d.riskHits||[]).slice();
+  var byRule=new Map();
+  hits.forEach(function(h){
+    (h.hits||[]).forEach(function(x){
+      var k=x.name||"?";
+      if(!byRule.has(k)) byRule.set(k,{name:k,cat:x.cat||"",n:0});
+      byRule.get(k).n++;
+    });
+  });
+  var rules=Array.from(byRule.values()).sort(function(a,b){ return b.n-a.n; });
+  var html="";
+  if(rules.length){
+    html+="<div class=small style='margin-bottom:8px'><b>命中规则排行</b></div><div style='margin-bottom:10px'>"+
+      rules.map(function(r){ return "<span class=tag>"+esc(r.name)+"（"+esc(r.cat)+"）× "+r.n+"</span>"; }).join("")+"</div>";
+  }
+  if(!hits.length){
+    html+="<div class=empty>暂无风险命中。脚本会对 JD 和对方消息自动打分，命中规则时记录在这里。</div>";
+    $("risk").innerHTML=html; return;
+  }
+  html+="<table class=t><tr><th>时间</th><th>来源</th><th>公司 / 岗位</th><th>风险</th><th>命中规则</th><th>片段</th></tr>";
+  hits.slice(0,200).forEach(function(h){
+    html+="<tr><td class=mut>"+esc(fmtTime(h.ts))+"</td>"+
+      "<td>"+(h.src==="chat"?"聊天":"JD")+"</td>"+
+      "<td>"+esc(h.company||"—")+(h.jobName?"<br><span class=mut>"+esc(h.jobName)+"</span>":"")+"</td>"+
+      "<td><span class='lv "+lvClass(h.level)+"'>"+esc(h.level||"")+" "+esc(h.score||"")+"</span></td>"+
+      "<td>"+esc((h.hits||[]).map(function(x){ return x.name; }).join("、"))+"</td>"+
+      "<td class=small>"+esc(h.text||"")+"</td></tr>";
+  });
+  html+="</table>";
+  $("risk").innerHTML=html;
+}
+
+function renderSessions(){
+  var sessions=chatsArr();
+  if(!sessions.length){ $("sessions").innerHTML="<div class=empty>暂无会话数据。打开 BOSS 消息页正常浏览后会自动捕获。</div>"; return; }
+  sessions.sort(function(a,b){ return toTs(b.meta.lastTime)-toTs(a.meta.lastTime); });
+  var html="<table class=t><tr><th>公司</th><th>对方 / 岗位</th><th>消息</th><th>我</th><th>对方</th><th>首响</th><th>最后消息</th></tr>";
+  sessions.forEach(function(s){
+    var me=0, them=0, last=0;
+    (s.messages||[]).forEach(function(m){
+      if(m.dir==="me") me++; else them++;
+      var t=toTs(m.ts); if(t>last) last=t;
+    });
+    var fr=firstReplyMinutes(s);
+    html+="<tr><td><b>"+esc(s.meta.company||s.meta.sessionId)+"</b></td>"+
+      "<td>"+esc(s.meta.boss||"—")+(s.meta.jobName?" <span class=mut>"+esc(s.meta.jobName)+"</span>":"")+"</td>"+
+      "<td>"+((s.messages||[]).length)+"</td><td>"+me+"</td><td>"+them+"</td>"+
+      "<td>"+(fr===null?"—":fr+" 分钟")+"</td>"+
+      "<td class=mut>"+(last?esc(new Date(last).toLocaleString("zh-CN",{hour12:false})):"—")+"</td></tr>";
+  });
+  html+="</table>";
+  $("sessions").innerHTML=html;
+}
+
+function renderAll(){
+  renderCards(); renderJobs(); renderChanges(); renderChat(); renderRisk(); renderSessions();
+}
+
+function load(data){
+  if(!data||typeof data!=="object") throw new Error("格式错误：不是有效的备份 JSON");
+  DASH={
+    jobs:data.jobs&&typeof data.jobs==="object"?data.jobs:{},
+    chats:data.chats&&typeof data.chats==="object"?data.chats:{},
+    changelog:Array.isArray(data.changelog)?data.changelog:[],
+    riskHits:Array.isArray(data.riskHits)?data.riskHits:[],
+    rules:Array.isArray(data.rules)?data.rules:[],
+    settings:data.settings||{}
+  };
+  UI.open="";
+  $("drop").classList.add("hidden");
+  $("dash").classList.remove("hidden");
+  renderAll();
+}
+
+function reset(){
+  DASH=null;
+  $("dash").classList.add("hidden");
+  $("drop").classList.remove("hidden");
+}
+
+function readFile(f){
+  if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){
+    try{ load(JSON.parse(String(r.result))); }
+    catch(e){ alert("读取失败："+e.message); }
+  };
+  r.readAsText(f,"utf-8");
+}
+
+function demoData(){
+  var t=Date.now();
+  return {
+    jobs:{
+      job1:{jobId:"job1", meta:{name:"前端工程师", company:"示例科技", city:"上海", exp:"3-5年", edu:"本科", boss:"张经理", url:"https://www.zhipin.com/"},
+        first:{ts:t-86400000*3, salary:"20-30K", jd:"负责前端开发\n熟悉 React\n入职需先交培训费", status:"在招", active:null},
+        last:{ts:t-3600000, salary:"25-35K", jd:"负责前端开发\n熟悉 React\n熟悉 Vue", status:"在招", active:null},
+        snapshots:[{ts:t-86400000*3, salary:"20-30K", jd:"负责前端开发\n熟悉 React\n入职需先交培训费", status:"在招", active:null},{ts:t-3600000, salary:"25-35K", jd:"负责前端开发\n熟悉 React\n熟悉 Vue", status:"在招", active:null}],
+        changes:[{ts:t-3600000, type:"job", jobName:"前端工程师", company:"示例科技", changes:["薪资：20-30K → 25-35K","JD变更 删1行 增1行：熟悉 Vue / [-]入职需先交培训费"]}],
+        risk:{score:0, level:"低", hits:[]}},
+      job2:{jobId:"job2", meta:{name:"Java开发（培训生）", company:"某教育咨询", city:"上海", exp:"经验不限", edu:"大专", boss:"李老师", url:""},
+        first:{ts:t-86400000, salary:"8-15K", jd:"零基础可做\n入职前需参加培训\n培训费可分期\n转正后月入过万", status:"在招", active:null},
+        last:{ts:t-7200000, salary:"8-15K", jd:"零基础可做\n入职前需参加培训\n培训费可分期\n转正后月入过万", status:"下线", active:null},
+        snapshots:[{ts:t-86400000, salary:"8-15K", jd:"零基础可做\n入职前需参加培训\n培训费可分期\n转正后月入过万", status:"在招", active:null}],
+        changes:[{ts:t-7200000, type:"job", jobName:"Java开发（培训生）", company:"某教育咨询", changes:["状态：在招 → 下线"]}],
+        risk:{score:50, level:"中", hits:[{name:"先交费/培训贷", cat:"收费陷阱", weight:30, kw:["培训费"]},{name:"薪资异常虚高", cat:"高薪诱饵", weight:20, kw:["月入过万"]}]}}
+    },
+    chats:{
+      f1:{meta:{sessionId:"f1", company:"示例科技", boss:"张经理", jobId:"job1", jobName:"前端工程师", lastTime:t-1800000, unread:1},
+        messages:[
+          {mid:"m1", dir:"me", ts:t-86400000, text:"您好，我对贵司前端岗位很感兴趣"},
+          {mid:"m2", dir:"them", ts:t-86400000+600000, text:"你好，方便发下简历吗"},
+          {mid:"m3", dir:"me", ts:t-1800000, text:"您好，方便发下简历吗"},
+          {mid:"m4", dir:"them", ts:t-1740000, text:"可以的，加微信详聊"}
+        ]},
+      f2:{meta:{sessionId:"f2", company:"某教育咨询", boss:"李老师", jobId:"job2", jobName:"Java开发（培训生）", lastTime:t-7200000, unread:0},
+        messages:[
+          {mid:"n1", dir:"me", ts:t-90000000, text:"您好，我对贵司前端岗位很感兴趣"},
+          {mid:"n2", dir:"them", ts:t-89940000, text:"先交培训费，培训完安排上岗"}
+        ]}
+    },
+    changelog:[
+      {id:"c2", ts:t-7200000, jobName:"Java开发（培训生）", company:"某教育咨询", changes:["状态：在招 → 下线"]},
+      {id:"c1", ts:t-3600000, jobName:"前端工程师", company:"示例科技", changes:["薪资：20-30K → 25-35K","JD变更 删1行 增1行：熟悉 Vue / [-]入职需先交培训费"]}
+    ],
+    riskHits:[
+      {ts:t-3600000, src:"jd", company:"某教育咨询", jobName:"Java开发（培训生）", text:"零基础可做 入职前需参加培训", score:50, level:"中", hits:[{name:"先交费/培训贷", cat:"收费陷阱", weight:30},{name:"薪资异常虚高", cat:"高薪诱饵", weight:20}]},
+      {ts:t-7200000, src:"chat", company:"某教育咨询", jobName:"Java开发（培训生）", text:"先交培训费，培训完安排上岗", score:30, level:"中", hits:[{name:"先交费/培训贷", cat:"收费陷阱", weight:30}]}
+    ],
+    rules:[], settings:{chat:{replyWindowHours:24}}
+  };
+}
+
+$("file").addEventListener("change",function(e){ readFile(e.target.files&&e.target.files[0]); e.target.value=""; });
+$("demo").addEventListener("click",function(){ load(demoData()); });
+$("reset").addEventListener("click",reset);
+["dragenter","dragover"].forEach(function(t){
+  document.addEventListener(t,function(e){ e.preventDefault(); $("drop").classList.add("on"); });
+});
+["dragleave","drop"].forEach(function(t){
+  document.addEventListener(t,function(e){ e.preventDefault(); if(t==="drop"||e.target===document) $("drop").classList.remove("on"); });
+});
+document.addEventListener("drop",function(e){
+  var f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];
+  if(f) readFile(f);
+});
+$("q").addEventListener("input",function(e){ UI.q=e.target.value; renderJobs(); });
+$("fRisk").addEventListener("change",function(e){ UI.risk=e.target.value; renderJobs(); });
+$("fStatus").addEventListener("change",function(e){ UI.status=e.target.value; renderJobs(); });
+$("fSort").addEventListener("change",function(e){ UI.sort=e.target.value; renderJobs(); });
+document.addEventListener("click",function(e){
+  var b=e.target.closest("[data-act]");
+  if(!b) return;
+  if(b.dataset.act==="open"){ UI.open=(UI.open===b.dataset.id)?"":b.dataset.id; renderJobs(); }
+});
+
+window.bwDash={load:load, reset:reset, demo:demoData, ui:UI};
+</script>
+</body>
+</html>
