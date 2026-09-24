@@ -57,7 +57,7 @@
 | [boss-tag](docs/scripts/tag.md) | 命中打标签（只标记，不隐藏） | 职位列表页 | 只读 | 低 |
 | [boss-watcher](docs/scripts/watcher.md) | 岗位监控：建档 / 盯住 / 变更流水 | 职位列表页 + 详情页 | 只读（收录时发 2 次请求） | 低 |
 | [boss-chat](docs/scripts/chat.md) | 聊天归档、推进信号、导出复盘表 | 消息 / 聊天页 | 只读 | 低 |
-| [boss-insight](docs/scripts/insight.md) | 会话风险体检 + 一键处置 | 招聘站任意页面 | 只读 + 点击才写 | **中**（拉黑 / 删除不可逆） |
+| [boss-insight](docs/scripts/insight.md) | 聊天风险体检 + 一键处置 | 招聘站任意页面 | 只读 + 点击才写 | **中**（拉黑 / 删除不可逆） |
 | [boss-consist](docs/scripts/consist.md) | 卡片标签 vs 详情正文一致性体检 | 职位相关页面 | 只读（补取详情要手动点） | 低 |
 
 > 每个脚本的权限、本机数据键、协同标记都在 `docs/scripts/` 下自动生成，跟代码保持一致。
@@ -73,7 +73,7 @@
 | 命中打标签 | [boss-tag.user.js](https://raw.githubusercontent.com/weishiji668/jiajianchengchu-boss/main/boss-tag.user.js) |
 | 岗位监控 | [boss-watcher.user.js](https://raw.githubusercontent.com/weishiji668/jiajianchengchu-boss/main/boss-watcher.user.js) |
 | 聊天助手 | [boss-chat.user.js](https://raw.githubusercontent.com/weishiji668/jiajianchengchu-boss/main/boss-chat.user.js) |
-| 会话体检 | [boss-insight.user.js](https://raw.githubusercontent.com/weishiji668/jiajianchengchu-boss/main/boss-insight.user.js) |
+| 聊天体检 | [boss-insight.user.js](https://raw.githubusercontent.com/weishiji668/jiajianchengchu-boss/main/boss-insight.user.js) |
 | 一致性体检 | [boss-consist.user.js](https://raw.githubusercontent.com/weishiji668/jiajianchengchu-boss/main/boss-consist.user.js) |
 
 
@@ -111,7 +111,7 @@
 
 **装了没反应？** 先确认脚本已启用 → 按 `Ctrl+Shift+R` 强刷 → 看面板右下角的版本号能不能对上仓库版本。若面板提示「页面世界钩子未注入」，多半是没强刷。
 
-**页面上出现两个一样的悬浮球？** 旧版本有过这个缺陷，现在已经修掉：脚本改成 DOM 级幂等 —— 页面里已经有 `#bcRoot` / `#biRoot` / `#bwPanel` 就复用，不会再挂第二个（聊天助手 v1.5.11、会话体检 v0.5.9 起）。
+**页面上出现两个一样的悬浮球？** 旧版本有过这个缺陷，现在已经修掉：脚本改成 DOM 级幂等 —— 页面里已经有 `#bcRoot` / `#biRoot` / `#bwPanel` 就复用，不会再挂第二个（聊天助手 v1.5.11、聊天体检 v0.5.9 起）。
 如果版本号已经是最新却仍是两个球，那就是**同一个脚本装了两份**：两份的 `@name` + `@namespace` 不同，管理器会当成两个脚本同时跑、同时写同一批本机键。到管理器脚本列表里删掉多余那条即可。
 
 **面板数字不对？** 多标签页同时开着时，历史版本出现过互相覆盖；现在写盘前都会先跟磁盘上的数据合并，不再覆盖。若仍不一致：先 `Ctrl+Shift+R` 强刷一次；`boss-insight` 的面板里可以点「刷新会话」重读会话列表。

@@ -1,11 +1,11 @@
-# BOSS直聘 · 岗位体检（岗位风险词 + 聊天处置）
+# BOSS直聘 · 聊天体检（风险词 + 一键处置）
 
 > 本页由 `tools/gen-script-docs.cjs` 从脚本头部与代码事实生成；要改内容请改脚本本身后重跑。
 
 | | |
 | --- | --- |
 | 文件 | `boss-insight.user.js` |
-| 版本 | v0.5.10 |
+| 版本 | v0.5.11 |
 | 生效页面 | https://www.zhipin.com/*、https://*.zhipin.com/* |
 | 运行时机 | document-idle（@noframes：不在 iframe 里重复注入） |
 
@@ -58,4 +58,4 @@
 
 ## 完整更新日志
 
-见 [CHANGELOG.md](../../CHANGELOG.md) 中「BOSS直聘 · 岗位体检（岗位风险词 + 聊天处置）」一节（由脚本头部的 `@description` 自动生成）。
+见 [CHANGELOG.md](../../CHANGELOG.md) 中「BOSS直聘 · 聊天体检（风险词 + 一键处置）」一节（由脚本头部的 `@description` 自动生成）。

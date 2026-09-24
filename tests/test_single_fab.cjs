@@ -52,7 +52,7 @@ function check(name, cond, extra) {
       }));
       console.log('    DOM 计数：' + JSON.stringify(n));
       check('聊天助手只挂一个悬浮球（#bcRoot=1）', n.bcRoot === 1 && n.bcFab === 1, JSON.stringify(n));
-      check('岗位体检只挂一个悬浮球（#biRoot=1）', n.biRoot === 1 && n.biFab === 1, JSON.stringify(n));
+  check('聊天体检只挂一个悬浮球（#biRoot=1）', n.biRoot === 1 && n.biFab === 1, JSON.stringify(n));
       const opened = await page.evaluate(() => {
         const b = document.getElementById('biFab'); if (!b) return false;
         b.click();
@@ -81,7 +81,7 @@ function check(name, cond, extra) {
         bwRoot: document.querySelectorAll('#bwRoot').length, bwFab: document.querySelectorAll('#bwFab').length
       }));
       console.log('    DOM 计数：' + JSON.stringify(n));
-      check('岗位体检只挂一个悬浮球（#biRoot=1）', n.biRoot === 1, JSON.stringify(n));
+  check('聊天体检只挂一个悬浮球（#biRoot=1）', n.biRoot === 1, JSON.stringify(n));
       check('岗位监控只挂一个悬浮球（#bwRoot=1）', n.bwRoot === 1 && n.bwFab === 1, JSON.stringify(n));
       check('无运行时错误', errors.length === 0, errors.join(' | '));
       await page.close();

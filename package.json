@@ -1,7 +1,7 @@
 {
   "name": "@weishiji668/boss-zhipin-userscripts",
   "version": "0.1.0",
-  "description": "面向 BOSS直聘 网页的求职辅助油猴脚本集合：页面过滤 / 命中打标签 / 岗位监控 / 聊天归档 / 会话体检 / 一致性体检。数据默认只存本机。",
+  "description": "面向 BOSS直聘 网页的求职辅助油猴脚本集合：页面过滤 / 命中打标签 / 岗位监控 / 聊天归档 / 聊天体检 / 一致性体检。数据默认只存本机。",
   "keywords": ["userscript", "tampermonkey", "job-hunting", "zhipin"],
   "license": "MIT",
   "homepage": "https://github.com/weishiji668/jiajianchengchu-boss",

@@ -5,7 +5,7 @@
 | | |
 | --- | --- |
 | 文件 | `boss-watcher.user.js` |
-| 版本 | v0.9.7 |
+| 版本 | v0.9.8 |
 | 生效页面 | https://www.zhipin.com/*、https://*.zhipin.com/* |
 | 运行时机 | document-start（@noframes：不在 iframe 里重复注入） |
 

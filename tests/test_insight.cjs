@@ -1,4 +1,4 @@
-// 岗位体检（boss-insight）端到端测试：悬浮球 / 面板 / 风险规则 / AI 设置 / 重绘保护 / 菜单命令
+// 聊天体检（boss-insight）端到端测试：悬浮球 / 面板 / 风险规则 / AI 设置 / 重绘保护 / 菜单命令
 const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
@@ -135,4 +135,4 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   }
   console.log(failures ? ('\n失败 ' + failures + ' 项') : '\n全部通过 ✔');
   process.exitCode = failures ? 1 : 0;
-})().catch(e=>{ console.error('岗位体检测试异常：' + (e && e.stack || e)); process.exitCode = 1; });
+})().catch(e=>{ console.error('聊天体检测试异常：' + (e && e.stack || e)); process.exitCode = 1; });
