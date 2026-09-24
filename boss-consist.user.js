@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         BOSS直聘 · 一致性体检（卡片标签 vs 详情正文）
 // @namespace    local.boss-consist
-// @version      0.2.7
-// @description  读卡片小标签（学历/经验 chip）与详情正文（共用 boss-filter 的 bwf_jd_cache 缓存；缺的按页面上有多少批量补取多少 /job_detail/<id>.html，串行小间隔、无每日额度），检三类：① 学历矛盾（卡片大专、正文本科及以上）；② 经验矛盾（卡片经验不限、正文要求 1 年以上）；③ 正文硬要求（四六级/CET/小语种/证书词，卡片上根本不显示）。状态条两个按钮：「隐藏」批量隐藏命中卡（data-bc-hide，协同协议），「标记」只打胶囊不隐藏；结果按 jobId 落盘 bc_actions，刷新自动恢复；面板「清除」撤销本脚本的隐藏/标记。v0.1.1：只在职位相关页面（列表/搜索/推荐/详情）出现状态条与按钮，聊天/消息页不挂 UI（它服务的是职位卡片，不是会话）。v0.1.2：默认位置上移到 🩺 体检球上方（不再重叠）；状态条可拖动（按住黑条拖，位置存本机 bc_ui，刷新还在）。v0.2.0：人工复核——右键命中卡「取消标记」（名单落盘 bc_unmarked，不再被打标/隐藏），再右键可「恢复标记」；「隐藏」按钮只藏当前带标记的卡。v0.2.2：面板可拖动（按住标题行拖，位置存 bc_ui_panel）；新增「手动对比」两框：第一框贴卡片内容（chips/岗位名/公司/地点）、第二框贴详情正文，点「对比这两框」即时出矛盾结论（不联网、不打标）。除你点按钮触发的详情补取外不发请求；不改站点数据。v0.1.0：首版。v0.2.3（审核修复）：修「批量补取详情页没有总量上限、没有失败即停、风控识别太窄」——原先只在 HTTP 429 时冷却，而 BOSS 实际风控响应是 403 或 200+滑块验证页，两者都不触发冷却；搜索页无限滚动下滚到 300 张卡就点「标记」会串行发出最多 300 个整页详情请求。现在风控识别扩到 403/429/503 + 验证页关键词 + 响应过短，单次运行 40 个硬上限，连续失败 3 次即停并冷却 5 分钟。修「详情缓存上限本身就超过浏览器配额」——原上限 1000 条 × 单条 6000 字符 = 600 万字符，而 localStorage 通常只有 5MB，写盘失败被 catch(e){} 静默吞掉，缓存静默失效后每次点按钮都重拉全部详情页；现在上限降到 400 条/120 万字符 + 写前按 TTL 清死条目 + 配额错误不再静默（会提示并重置缓存）。v0.2.4（审核修复）：修「右键『恢复标记』触发整页批量补取」——原来恢复一张卡会调 runBatch('mark') 把整页重新体检一遍，后台串行补取最多 40 个详情页并给整页重打一遍标；现在只重跑你右键的那一张。修「取消标记有时静默失败」——原选择器把 jobId 直接拼进 CSS 字符串（特殊字符会抛异常）、且只找 li 祖先，现在改成遍历链接比对 href。修「面板词表/名单/原因未转义」——这些文字直接拼进 innerHTML，带 < > & " 的内容会破坏面板结构，现已统一转义。修「清除按钮与取消标记名单脱节」——点「清除」原来不动名单，名单里的岗位之后永远不会再被打标/隐藏且面板上看不到解释，现已一并清空并提示。修「右键接管与滚动重扫在所有页面生效」——聊天页/公司页右键也会被拦，现已收进职位页判断。v0.2.5（审核复核）：修「右键『取消标记』点了没反应」—— v0.2.4 把卡片定位从「最近 li 祖先」改成「向上找第一个 isCardLike 祖先」，而 isCardLike 也会命中 <a class="job-card-left"> / <div class="job-card-body"> 这类内层元素，于是 clearJob() 清的是内层节点，卡片上的胶囊与 data-bc-mark 依旧在（名单已落盘，看起来却像没生效）。现在改用与「隐藏 / 标记」同一套 findCards() 定位（最外层、且不过大的卡片），找不到再退回 li 祖先。v0.2.6（与 boss-filter v1.3.2 同一根因）：修「详情正文被取成了站点的卡片摘要」——jdFromHtml 的正则原来把 description 也算候选，而卡片摘要的字段名就是它、且通常排在正文之前，于是「XX招聘，薪资：…地点：…要求：…福利：…刚刚在线，随时随地直接开聊。」被当成正文写进共用的 bwf_jd_cache；结果本脚本的正文硬要求/学历经验矛盾检不出来，filter 的详情排除词也永远命中不了，且脏条目占着「已取」名额不让重取。现在只认 jobDescription / jobDesc，并新增 jdLooksReal 正文可信度校验（摘要签名判否 + 要求正文小标题或 ≥300 字），jdFromDom / jdFromHtml / jdSet / jdOf 四处统一过闸，脏条目写不进也读不出（会被当作缺正文重新补取）；站点验证页（请稍候 / 正在验证等）计入风控冷却。v0.2.7：写入共用缓存时保留 filter（v1.3.3+）存下的工作地址字段 —— 地点黑名单现在会吃这份地址，整条覆盖会让它丢失。
+// @version      0.2.8
+// @description  读卡片小标签（学历/经验 chip）与详情正文（共用 boss-filter 的 bwf_jd_cache 缓存；缺的按页面上有多少批量补取多少 /job_detail/<id>.html，串行小间隔、无每日额度），检三类：① 学历矛盾（卡片大专、正文本科及以上）；② 经验矛盾（卡片经验不限、正文要求 1 年以上）；③ 正文硬要求（四六级/CET/小语种/证书词，卡片上根本不显示）。状态条两个按钮：「隐藏」批量隐藏命中卡（data-bc-hide，协同协议），「标记」只打胶囊不隐藏；结果按 jobId 落盘 bc_actions，刷新自动恢复；面板「清除」撤销本脚本的隐藏/标记。v0.1.1：只在职位相关页面（列表/搜索/推荐/详情）出现状态条与按钮，聊天/消息页不挂 UI（它服务的是职位卡片，不是会话）。v0.1.2：默认位置上移到 🩺 体检球上方（不再重叠）；状态条可拖动（按住黑条拖，位置存本机 bc_ui，刷新还在）。v0.2.0：人工复核——右键命中卡「取消标记」（名单落盘 bc_unmarked，不再被打标/隐藏），再右键可「恢复标记」；「隐藏」按钮只藏当前带标记的卡。v0.2.2：面板可拖动（按住标题行拖，位置存 bc_ui_panel）；新增「手动对比」两框：第一框贴卡片内容（chips/岗位名/公司/地点）、第二框贴详情正文，点「对比这两框」即时出矛盾结论（不联网、不打标）。除你点按钮触发的详情补取外不发请求；不改站点数据。v0.1.0：首版。v0.2.3（审核修复）：修「批量补取详情页没有总量上限、没有失败即停、风控识别太窄」——原先只在 HTTP 429 时冷却，而 BOSS 实际风控响应是 403 或 200+滑块验证页，两者都不触发冷却；搜索页无限滚动下滚到 300 张卡就点「标记」会串行发出最多 300 个整页详情请求。现在风控识别扩到 403/429/503 + 验证页关键词 + 响应过短，单次运行 40 个硬上限，连续失败 3 次即停并冷却 5 分钟。修「详情缓存上限本身就超过浏览器配额」——原上限 1000 条 × 单条 6000 字符 = 600 万字符，而 localStorage 通常只有 5MB，写盘失败被 catch(e){} 静默吞掉，缓存静默失效后每次点按钮都重拉全部详情页；现在上限降到 400 条/120 万字符 + 写前按 TTL 清死条目 + 配额错误不再静默（会提示并重置缓存）。v0.2.4（审核修复）：修「右键『恢复标记』触发整页批量补取」——原来恢复一张卡会调 runBatch('mark') 把整页重新体检一遍，后台串行补取最多 40 个详情页并给整页重打一遍标；现在只重跑你右键的那一张。修「取消标记有时静默失败」——原选择器把 jobId 直接拼进 CSS 字符串（特殊字符会抛异常）、且只找 li 祖先，现在改成遍历链接比对 href。修「面板词表/名单/原因未转义」——这些文字直接拼进 innerHTML，带 < > & " 的内容会破坏面板结构，现已统一转义。修「清除按钮与取消标记名单脱节」——点「清除」原来不动名单，名单里的岗位之后永远不会再被打标/隐藏且面板上看不到解释，现已一并清空并提示。修「右键接管与滚动重扫在所有页面生效」——聊天页/公司页右键也会被拦，现已收进职位页判断。v0.2.5（审核复核）：修「右键『取消标记』点了没反应」—— v0.2.4 把卡片定位从「最近 li 祖先」改成「向上找第一个 isCardLike 祖先」，而 isCardLike 也会命中 <a class="job-card-left"> / <div class="job-card-body"> 这类内层元素，于是 clearJob() 清的是内层节点，卡片上的胶囊与 data-bc-mark 依旧在（名单已落盘，看起来却像没生效）。现在改用与「隐藏 / 标记」同一套 findCards() 定位（最外层、且不过大的卡片），找不到再退回 li 祖先。v0.2.6（与 boss-filter v1.3.2 同一根因）：修「详情正文被取成了站点的卡片摘要」——jdFromHtml 的正则原来把 description 也算候选，而卡片摘要的字段名就是它、且通常排在正文之前，于是「XX招聘，薪资：…地点：…要求：…福利：…刚刚在线，随时随地直接开聊。」被当成正文写进共用的 bwf_jd_cache；结果本脚本的正文硬要求/学历经验矛盾检不出来，filter 的详情排除词也永远命中不了，且脏条目占着「已取」名额不让重取。现在只认 jobDescription / jobDesc，并新增 jdLooksReal 正文可信度校验（摘要签名判否 + 要求正文小标题或 ≥300 字），jdFromDom / jdFromHtml / jdSet / jdOf 四处统一过闸，脏条目写不进也读不出（会被当作缺正文重新补取）；站点验证页（请稍候 / 正在验证等）计入风控冷却。v0.2.7：写入共用缓存时保留 filter（v1.3.3+）存下的工作地址字段 —— 地点黑名单现在会吃这份地址，整条覆盖会让它丢失。 v0.2.8（文案统一·测试版）：面板里的「状态条」改叫「小条」；「冷却」统一成「限流冷却」；补一条「隐藏 / 标记都是本地动作、不发请求」的备注与用例。
 // @author       weishiji668
 // @license      MIT
 // @homepageURL  https://github.com/weishiji668/jiajianchengchu-boss
@@ -17,7 +17,7 @@
 // ==/UserScript==
 (function(){
 'use strict';
-const VERSION='0.2.7';
+const VERSION='0.2.8';
 const LS_CFG='bc_rules_v1';
 const LS_ACT='bc_actions_v1';
 const LS_COOL='bc_cool_until';
@@ -295,7 +295,7 @@ function setStatus(t){ try{ const el=document.getElementById('csCount'); if(el&&
 async function runBatch(mode, onlyKey){
   if(busy) return;
   const cool=coolLeft();
-  if(cool>0){ setStatus('冷却中 '+Math.ceil(cool/60000)+' 分钟（站点限流）'); return; }
+  if(cool>0){ setStatus('限流冷却中 '+Math.ceil(cool/60000)+' 分钟（站点限流）'); return; }
   busy=true;
   try{
     // v0.2.4：onlyKey 非空时只处理这一张卡。右键「恢复标记」原来调的是 runBatch('mark')，
@@ -317,9 +317,9 @@ async function runBatch(mode, onlyKey){
         fetched++;
         try{
           const r=await fetchOneDetail(it.href, jobId);
-          if(r.cool){ setCool(15*60*1000); cooled=true; setStatus('站点限流，冷却 15 分钟'); break; }
+          if(r.cool){ setCool(15*60*1000); cooled=true; setStatus('站点限流，限流冷却 15 分钟'); break; }
           if(!r.ok){                                   // v0.2.3：连续失败即停（原来失败只计数、循环照跑）
-            if(++streak>=3){ setCool(5*60*1000); cooled=true; setStatus('连续 3 个详情取不到（'+(r.why||'')+'），已停并冷却 5 分钟'); break; }
+            if(++streak>=3){ setCool(5*60*1000); cooled=true; setStatus('连续 3 个详情取不到（'+(r.why||'')+'），已停并限流冷却 5 分钟'); break; }
           }else streak=0;
           jd=r.ok?jdOf(jobId):'';
         }catch(e){ jd=''; }
@@ -527,8 +527,9 @@ function renderPanel(){
     '<div class="cs-row"><button class="cs-btn" id="csSave" style="color:#1f2430;border-color:#cbd5e1">保存</button>　'+
     '<button class="cs-btn" id="csClear" style="color:#b91c1c;border-color:#fca5a5">清除本脚本的隐藏/标记</button>　'+
     '<button class="cs-btn" id="csClearUnmark" style="color:#1f2430;border-color:#cbd5e1">清空取消标记名单（'+Object.keys(BC_UNMARKED).length+'）</button></div>'+
-    '<div class="cs-hint">状态条可拖动：按住黑条拖到不挡的位置，位置存本机。</div>'+
-    '<div class="cs-hint">正文来源：与「页面过滤」共用本机缓存 bwf_jd_cache；缺的点「隐藏/标记」时按页面上有多少批量补取多少（串行 0.6~1.2 秒间隔，无每日额度；站点限流自动冷却 15 分钟）。没取到正文的卡不判、也不打「未核验」标记。隐藏走协同协议 data-bc-hide，不会与 filter / tag 互撤。</div>';
+    '<div class="cs-hint">小条可拖动：按住黑条拖到不挡的位置，位置存本机。</div>'+
+    '<div class="cs-hint"><b>隐藏 / 标记</b>都是本地动作：不发任何请求、不改站点数据，隐藏随时可恢复。用例：这里管<b>岗位卡片</b>（学历/经验矛盾、正文硬要求）；聊天会话的体检与隐藏，在「聊天体检」脚本里。</div>'+
+    '<div class="cs-hint">正文来源：与「页面过滤」共用本机缓存 bwf_jd_cache；缺的点「隐藏/标记」时按页面上有多少批量补取多少（串行 0.6~1.2 秒间隔，无每日额度；站点限流自动限流冷却 15 分钟）。没取到正文的卡不判、也不打「未核验」标记。隐藏走协同协议 data-bc-hide，不会与 filter / tag 互撤。</div>';
   renderPanelStat();
   u.panel.querySelector('#csSave').addEventListener('click',()=>{
     cfg.eduOn=!!u.panel.querySelector('#csEdu').checked;

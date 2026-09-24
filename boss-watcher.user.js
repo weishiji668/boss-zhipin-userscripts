@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         BOSS直聘 · 岗位监控（建档 / 盯住 / 跟进信号）
 // @namespace    local.boss-watcher
-// @version      0.9.6
-// @description  岗位监控（按需收录版）：面板粘贴「公司名 + 职位名」→ 站内搜索定位 → 抓一次详情建档（记 HR 名）→ 之后你浏览到它时用页面实时数据对比，识别「薪资下调 / 要求拔高 / HR 换人 / 突然下线」。不做整页预处理、不自动建档。变更日志=原始流水，跟进信号=待办；监控清单可导出 / 导入（JSON）。只读，除你点收录时发 1 次搜索 + 1 次详情外不发请求；数据仅存本机。聊天已拆到独立脚本 boss-chat.user.js。v0.9.1：修复「浏览对比的更新在重开页面后丢失」「历史快照被重复数据冲掉」「风控熔断后仍继续请求」「清空全部数据清不干净」「接口观察模式开关无效」等一批 bug（详见脚本头部变更说明），监控口径不变。 v0.9.3：修复「撤销变更按旧 100 上限截断误删人工记录」「立即检查可并发重复请求」「设置页数字输入被 5 秒重绘吞掉」「详情页/粘贴 ID 收录拿不到 HR」「重复收录静默失效」「热路径分键写入失效」「导入备份键按天累加不清」「监控间隔改了不生效」等一批 bug，监控口径不变。v0.9.4：面板可拖动（按住标题栏拖，位置存本机 bw_panelpos，刷新还在；视口钳制防拖出屏幕）。v0.9.4：导出文件统一命名「日期时间-用途-脚本」。v0.9.5（审核修复）：修「跨脚本镜像写爆浏览器存储」——本机镜像（bw_company_jobs / bw_job_addr / bw_insight_in）原来只增不减，写满 localStorage 5MB 后 setItem 抛配额异常被 catch 静默吞掉，镜像静默失效、还会拖垮同源下其它脚本的落盘。现在统一走带上限的写入：TTL 30 天 + 条数上限 800 + 总量 120 万字符，超了按时间淘汰；写不进去会在日志里明说「本机存储可能已满」，不再假装成功。修「删除岗位留下幽灵行」——从监控列表移除岗位时清了 signals 却没清 changelog，「待跟进」里会留下这个岗位的历史变更行、点进去指向已不存在的岗位；现已一并清理。修「不花钱也能把额度耗光」——卡片上的「收录」按钮原来绕过风控熔断与每日预算直接发详情请求，熔断期间照发、预算用完照发；现在两道闸都拦。修「重复扫描详情页 DOM」——同一岗位短时间内被反复扫描，现在按 jobId + DOM 节点数做 2 分钟缓存，并把扫描范围限定在详情容器内（上限 1500 个元素）。修「盯岗的 JD 常常是空的」——详情页数据已由页面钩子拿到时不额外发请求，优先用钩子里的 JD。修「多开标签页互相覆盖」——每个标签页有独立 ID，启动时登记，面板会区分「同一版本多开」与「版本不一致」两种情况。清理：删掉从没接通的「桌面通知」设置（含 @grant GM_notification 与相关开关）、无人调用的死代码、以及导出表里两列永远为空的 AI/风险列（面板文案同步改成实话）。v0.9.6：新增 GM 兼容适配层 —— 脚本不再只认篡改猴：篡改猴 / 暴力猴 / 脚本猫任选其一即可，甚至在完全没有脚本管理器时（把脚本直接注入页面）也能跑；缺的能力自动补齐（存储退化为 localStorage、同源请求改走 fetch、菜单退化为页面内 ⚙、样式退化为 style 标签；跨域 AI 功能仍需管理器）。装了管理器的用户行为与上一版完全一致 —— 适配层只补齐、不覆盖。新增「🔍 环境自检（兼容层）」菜单项，一眼看清当前跑在什么环境、哪些能力可用。
+// @version      0.9.7
+// @description  岗位监控（按需收录版）：面板粘贴「公司名 + 职位名」→ 站内搜索定位 → 抓一次详情建档（记 HR 名）→ 之后你浏览到它时用页面实时数据对比，识别「薪资下调 / 要求拔高 / HR 换人 / 突然下线」。不做整页预处理、不自动建档。变更日志=原始流水，跟进信号=待办；监控清单可导出 / 导入（JSON）。只读，除你点收录时发 1 次搜索 + 1 次详情外不发请求；数据仅存本机。聊天已拆到独立脚本 boss-chat.user.js。v0.9.1：修复「浏览对比的更新在重开页面后丢失」「历史快照被重复数据冲掉」「风控熔断后仍继续请求」「清空全部数据清不干净」「接口观察模式开关无效」等一批 bug（详见脚本头部变更说明），监控口径不变。 v0.9.3：修复「撤销变更按旧 100 上限截断误删人工记录」「立即检查可并发重复请求」「设置页数字输入被 5 秒重绘吞掉」「详情页/粘贴 ID 收录拿不到 HR」「重复收录静默失效」「热路径分键写入失效」「导入备份键按天累加不清」「监控间隔改了不生效」等一批 bug，监控口径不变。v0.9.4：面板可拖动（按住标题栏拖，位置存本机 bw_panelpos，刷新还在；视口钳制防拖出屏幕）。v0.9.4：导出文件统一命名「日期时间-用途-脚本」。v0.9.5（审核修复）：修「跨脚本镜像写爆浏览器存储」——本机镜像（bw_company_jobs / bw_job_addr / bw_insight_in）原来只增不减，写满 localStorage 5MB 后 setItem 抛配额异常被 catch 静默吞掉，镜像静默失效、还会拖垮同源下其它脚本的落盘。现在统一走带上限的写入：TTL 30 天 + 条数上限 800 + 总量 120 万字符，超了按时间淘汰；写不进去会在日志里明说「本机存储可能已满」，不再假装成功。修「删除岗位留下幽灵行」——从监控列表移除岗位时清了 signals 却没清 changelog，「待跟进」里会留下这个岗位的历史变更行、点进去指向已不存在的岗位；现已一并清理。修「不花钱也能把额度耗光」——卡片上的「收录」按钮原来绕过风控熔断与每日预算直接发详情请求，熔断期间照发、预算用完照发；现在两道闸都拦。修「重复扫描详情页 DOM」——同一岗位短时间内被反复扫描，现在按 jobId + DOM 节点数做 2 分钟缓存，并把扫描范围限定在详情容器内（上限 1500 个元素）。修「盯岗的 JD 常常是空的」——详情页数据已由页面钩子拿到时不额外发请求，优先用钩子里的 JD。修「多开标签页互相覆盖」——每个标签页有独立 ID，启动时登记，面板会区分「同一版本多开」与「版本不一致」两种情况。清理：删掉从没接通的「桌面通知」设置（含 @grant GM_notification 与相关开关）、无人调用的死代码、以及导出表里两列永远为空的 AI/风险列（面板文案同步改成实话）。v0.9.6：新增 GM 兼容适配层 —— 脚本不再只认篡改猴：篡改猴 / 暴力猴 / 脚本猫任选其一即可，甚至在完全没有脚本管理器时（把脚本直接注入页面）也能跑；缺的能力自动补齐（存储退化为 localStorage、同源请求改走 fetch、菜单退化为页面内 ⚙、样式退化为 style 标签；跨域 AI 功能仍需管理器）。装了管理器的用户行为与上一版完全一致 —— 适配层只补齐、不覆盖。新增「🔍 环境自检（兼容层）」菜单项，一眼看清当前跑在什么环境、哪些能力可用。 v0.9.7（文案统一·测试版）：卡片按钮「盯岗」改叫「收录」（和面板同一个词）；「立即对比」统一成「立即检查」；页签与卡片「待跟进」改成「待处理」（聊天脚本的「待跟进」专指我发言≥2天没回，两者区分开）；收录区补一句「收录＝存进本机档案」的备注与用例。
 // @author       weishiji668
 // @license      MIT
 // @homepageURL  https://github.com/weishiji668/jiajianchengchu-boss
@@ -267,7 +267,7 @@ var __bossCompat = (function () {
 // 行为边界不变：只读监控；除「收录 / 立即检查」（用户手动触发、有间隔/预算/熔断）外不发请求；存储键名不变。
 
 (function(){
-const VERSION='0.9.6';
+const VERSION='0.9.7';
 // v0.9.2：本标签页的实例号（随机，一个标签页一个），只用于 bw_instances 心跳，别处不用
 const INSTANCE_ID='t'+Math.random().toString(36).slice(2,10);
 const K_JOBS='bw_jobs', K_CHATS='bw_chats', K_RULES='bw_rules', K_SETTINGS='bw_settings',
@@ -2015,7 +2015,7 @@ async function recordFromInput(text,onStep){
         const scored=scoreCandidates(cands,p);
         if(!scored.length){
           // v0.9.1：文案诚实 —— 这里是异步回调里 window.open，大概率被浏览器弹窗拦截，不能说「已给你打开」
-          rep.fail.push({line, why:'站内没搜到（脚本尝试新开搜索页；若被浏览器拦截，请自己搜一下，在卡片上点「盯岗」即可收录）'});
+    rep.fail.push({line, why:'站内没搜到（脚本尝试新开搜索页；若被浏览器拦截，请自己搜一下，在卡片上点「收录」即可）'});
           openSearchPage(p.company,p.jobName,p.raw);
         }
         else if(scored.length===1||scored[0].score>=80){
@@ -2198,7 +2198,7 @@ function runMonitorCheck(done){
   // v0.9.0：只检查「我收录的」岗位（每一项都是你手动收进来的）
   const jobs=watchJobs().filter(j=>j.jobId&&((j.url)||(j.meta&&j.meta.url)));
   if(!jobs.length){
-    log('监控：还没有收录任何岗位（面板粘贴「公司名 + 职位名」收录，或在卡片上点「盯岗」）');
+    log('监控：还没有收录任何岗位（面板粘贴「公司名 + 职位名」收录，或在卡片上点「收录」）');
     if(done)done(); return;
   }
   const budget=getBudgetLeft();
@@ -2453,7 +2453,7 @@ function onPanelClick(e){
     if(!it) return;
     if(!it.jobId){ alert('这条没有职位ID（公司项），只能等你浏览到它时对比。'); return; }
     if(isBlocked()){ alert('风控熔断中，暂停到 '+blockedText()); return; }
-    recMsg='立即对比：'+(it.jobName||it.jobId)+'…'; renderMonitor();
+    recMsg='立即检查：'+(it.jobName||it.jobId)+'…'; renderMonitor();
     fetchDetailSnapshot(it.jobId,{jobId:it.jobId,name:it.jobName,company:it.company,hr:it.hr})
       .then(snap=>{
         spendBudget(1);
@@ -2461,7 +2461,7 @@ function onPanelClick(e){
         it.last=snapFromJob(snap,it.last); markSeen(it,it.last.ts);
         const n=applyWatchChanges(it,changes,'manual-check');
         save(['watch','jobs','changelog','signals','settings']);
-        recMsg=n?('发现 '+n+' 项变化（见「待跟进」）'):'没有变化'; renderMonitor();
+    recMsg=n?('发现 '+n+' 项变化（见「待处理」）'):'没有变化'; renderMonitor();
       })
       .catch(e=>{ recMsg='对比失败：'+(e.message||e); renderMonitor(); });
   }
@@ -2471,7 +2471,7 @@ function onPanelClick(e){
     if(f) f.click();
   }
   else if(act==='clearwatch'){
-    if(!confirm('清空本机监控数据（监控清单 + 快照 + 待跟进 + 变更日志）？\n建议先「导出监控清单」备份。')) return;
+    if(!confirm('清空本机监控数据（监控清单 + 快照 + 待处理 + 变更日志）？\n建议先「导出监控清单」备份。')) return;
     clearWatchData(); recMsg='已清空监控数据'; renderMonitor();
   }
   else if(act==='check'){ runMonitorCheck(()=>{ if(bwUi) renderMonitor(); }); }
@@ -2586,7 +2586,7 @@ function onPanelClick(e){
   // v0.9.1：删掉 rule-add / rule-del / rules-reset / export-all / import-all 五个死分支 ——
   // 它们调用的函数（addRule/delRule/resetRules/exportAll/importAll）在 v0.9.0 拆走风险规则时已经不存在了，
   // bwImportFile 元素也没人渲染；这些分支一旦哪天被误触发就是 ReferenceError/TypeError
-  else if(act==='clear-all'){ if(confirm('确定清空全部本地数据？（监控清单、快照、待跟进、变更日志、公司信息镜像都会清掉）\n建议先「导出监控清单」/「导出CSV」备份！')){ clearAll(); renderAll(); } }
+    else if(act==='clear-all'){ if(confirm('确定清空全部本地数据？（监控清单、快照、待处理、变更日志、公司信息镜像都会清掉）\n建议先「导出监控清单」/「导出CSV」备份！')){ clearAll(); renderAll(); } }
 }
 function onPanelChange(e){
   const el=e.target;
@@ -2705,7 +2705,7 @@ function cardRecordJob(jobId,card,btn){
     // v0.9.2：原来这里完全不看预算和熔断 —— 连点 5 张卡就是 5 次详情请求，
     // 「主动检查（今日）」计数却一次都不涨，面板数字失真、也给 BOSS 留下高频详情特征
     if(isBlocked()){ alert('风控熔断中，暂停到 '+blockedText()+'，这期间不发任何请求。'); return; }
-    if(getBudgetLeft()<=0){ alert('今日主动请求预算已用完（'+store.settings.monitor.dailyBudget+' 次）。\n「盯岗」每收一个岗位要发 1 次详情请求，所以也走这个预算；明天自动归零。'); return; }
+    if(getBudgetLeft()<=0){ alert('今日主动请求预算已用完（'+store.settings.monitor.dailyBudget+' 次）。\n「收录」每收一个岗位要发 1 次详情请求，所以也走这个预算；明天自动归零。'); return; }
     if(btn){ btn.disabled=true; btn.textContent='收录中…'; }
     const cand=cardCandidateOf(card,jobId);
     // v0.9.2：先入账再发请求 —— 请求确实发出去了，失败/超时同样消耗预算
@@ -2716,7 +2716,7 @@ function cardRecordJob(jobId,card,btn){
       log('收录：'+(it.jobName||jobId)+'（'+(it.company||'')+(it.hr?(' · HR '+it.hr):'')+'）');
       scheduleRender();
     }).catch(e=>{
-      if(btn){ btn.disabled=false; btn.textContent='盯岗'; }
+    if(btn){ btn.disabled=false; btn.textContent='收录'; }
       alert('收录失败：'+(e&&e.message||e));
     });
   }catch(e){}
@@ -2743,7 +2743,7 @@ function injectCardButtons(){
       const box=document.createElement('div');
       box.className='bw-cardbtns';
       const b1=document.createElement('button');
-      b1.type='button'; b1.className='bw-cardbtn'; b1.textContent='盯岗';
+    b1.type='button'; b1.className='bw-cardbtn'; b1.textContent='收录';
       b1.title='收录这个岗位：抓一次详情建档（含 HR 名），之后你浏览到它就自动对比变化';
       b1.addEventListener('click',(ev)=>{ ev.preventDefault(); ev.stopPropagation(); cardRecordJob(jobId,card,b1); },true);
       const b2=document.createElement('button');
@@ -2771,7 +2771,7 @@ function renderMonitor(){
   const cmpToday=(st.compareDate===localDateStr())?(st.compareCount||0):0;
   let html='<div class="bw-cards">'+
     '<div class="bw-card" data-act="cardwatch" title="我手动收录的岗位 / 公司。没收录的岗位脚本一行都不记"><b>'+jobs.length+' / '+cos.length+'</b><span>监控岗位 / 公司</span></div>'+
-    '<div class="bw-card" data-act="cardsig" title="需要你行动的：薪资下调 / 要求拔高 / HR 换人 / 下线 / 新岗位。点这里看待办"><b>'+sigs.length+'</b><span>待跟进</span></div>'+
+    '<div class="bw-card" data-act="cardsig" title="需要你行动的：薪资下调 / 要求拔高 / HR 换人 / 下线 / 新岗位。点这里看待办"><b>'+sigs.length+'</b><span>待处理</span></div>'+
     '<div class="bw-card" data-act="cardcompare" title="浏览页面时，每遇到一个监控项就与上次快照对比一次（只读本机数据，不发任何请求）。今天累计 / 最后对比时间"><b>'+cmpToday+'</b><span>今日对比'+(st.lastCompareAt?(' · '+relDay(st.lastCompareAt)):'')+'</span></div>'+
     '<div class="bw-card" data-act="cardbudget" title="只在点「立即检查」时计数：每主动请求一个岗位 +1；浏览页面不消耗。跨天自动归零"><b>'+(st.usedToday||0)+'/'+st.dailyBudget+'</b><span>主动检查（今日）</span></div>'+
     '</div>';
@@ -2787,6 +2787,7 @@ function renderMonitor(){
   html+='<div class="bw-row"><button class="bw-btn" data-act="rec">收录</button>'+
     '<button class="bw-btn bw-sm" data-act="reccur">收录当前页</button>'+
     '<span class="bw-muted">'+(recordBusy?'收录中…':esc(recMsg||('收录时才发请求（1 次搜索 + 1 次详情），间隔 '+(watchCfg().reqMinDelay||2)+'–'+(watchCfg().reqMaxDelay||5)+' 秒'))) +'</span></div>';
+  html+='<div class="bw-muted" style="margin-top:4px">「收录」＝把这条岗位存进本机档案（点收录才发 1 次搜索 + 1 次详情请求）；卡片左上角的「收录」是同一个动作。用例：本脚本收录<b>岗位</b>，聊天脚本收录的是<b>会话</b>。</div>';
   if(pendingCand.length){
     html+='<div class="bw-note">有多条候选，点一行收录：<div style="margin-top:4px">'+
       pendingCand.map((c,i)=>'<div class="bw-row" style="margin:2px 0"><button class="bw-btn bw-sm" data-act="recpick" data-id="'+i+'">收录</button>'+
@@ -2802,9 +2803,9 @@ function renderMonitor(){
   // ===== 两个页签：监控项 / 待跟进 =====
   html+='<div class="bw-tabs" style="margin-top:10px">'+
     '<button class="'+(monTab==='watch'?'on':'')+'" data-act="montab" data-id="watch">监控项 '+items.length+'</button>'+
-    '<button class="'+(monTab==='signals'?'on':'')+'" data-act="montab" data-id="signals">待跟进 '+sigs.length+'</button></div>';
+    '<button class="'+(monTab==='signals'?'on':'')+'" data-act="montab" data-id="signals">待处理 '+sigs.length+'</button></div>';
   if(monTab==='signals'){
-    if(!sigs.length) html+='<div class="bw-empty">暂无待跟进。监控项出现「薪资下调 / 要求拔高 / HR 换人 / 下线 / 新岗位」时会进这里。</div>';
+    if(!sigs.length) html+='<div class="bw-empty">暂无待处理。监控项出现「薪资下调 / 要求拔高 / HR 换人 / 下线 / 新岗位」时会进这里。</div>';
     else html+=sigs.slice(0,40).map(s=>{
       const tag=s.level==='alert'?'<span class="bw-lv bw-lv高">重要</span>':(s.level==='warn'?'<span class="bw-lv bw-lv中">需留意</span>':'<span class="bw-lv bw-lv低">提示</span>');
       const it=store.watch[s.itemId]||{};
@@ -2837,7 +2838,7 @@ function renderMonitor(){
           '<td>'+(last.salary?esc(last.salary):'—')+(last.exp?('<br><span class="bw-muted">'+esc(last.exp)+(last.edu?(' · '+esc(last.edu)):'')+'</span>'):'')+'</td>'+
           '<td class="bw-muted">'+esc(String(lastCh).slice(0,40))+(it.lastChangeAt?('<br><span class="bw-muted">'+relDay(it.lastChangeAt)+'</span>'):'')+'</td>'+
           '<td>'+(it.url?'<button class="bw-btn bw-sm" data-act="watchopen" data-id="'+esc(it.url)+'">打开</button> ':'')+
-          '<button class="bw-btn bw-sm" data-act="watchcheck" data-id="'+esc(it.id)+'">立即对比</button> '+
+    '<button class="bw-btn bw-sm" data-act="watchcheck" data-id="'+esc(it.id)+'">立即检查</button> '+
           '<button class="bw-btn bw-sm bw-danger" data-act="watchdel" data-id="'+esc(it.id)+'">删除</button></td></tr>';
         if(chg.length){
           html+='<tr><td colspan="5" class="bw-muted" style="padding-left:16px">'+chg.slice(0,5).map(c=>'· '+esc(c.text)).join('<br>')+

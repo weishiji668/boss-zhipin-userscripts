@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         BOSS直聘 · 岗位体检（岗位风险词 + 聊天处置）
 // @namespace    local.boss-insight
-// @version      0.5.9
-// @description  只做一件事：聊天会话体检与处置。① 读 boss-chat 写在 localStorage 的会话镜像（bc_chats_mirror，跨脚本共享那个键），用你设置的风险词扫**对方发来的消息**，命中的会话打「风险」标记；② 按标记一键处置：本地隐藏（可恢复）/ 标不感兴趣 / 拉黑 / 删除会话（后两者不可逆，只在你点击时执行，受每日上限与同会话冷却约束）。脚本自己不发任何页面请求；「岗位风险打分」在 v0.5.0 删除、「AI 跟进建议」在 v0.4.0 删除，这两项已不存在。设置：油猴菜单「⚙ 岗位体检设置」。v0.4.1：修「自己发的那句被当成对方原话」（列表那句只在没读到对方消息时兜底；详情页只收左半边的消息，右半边是我自己发的）+「同公司/同名 HR 文本歧义时挂错会话、可能误拉黑」（歧义宁可不挂）+「刷新后已标记/已删除状态全丢、跨页面失效」（处置状态落盘 bi_chat）+「按拉黑词批量拉黑会把已处理会话重复提交」（跳过已标记/已删除，口径与另两个批量一致）+ 隐藏名单与处置流水改读-改-写（多标签不互相覆盖）+ 若干本地性能小修（风险打分按镜像版本短路、消息区缓存与脏检测、面板少解析两遍镜像、后台标签不再空转）。v0.5.0：岗位风险**去掉打分**，改纯风险关键词（一行一个）；「立即体检」拿风险词扫聊天里对方发的消息，命中给会话卡打「风险」标记并计入待处理；新增「一键隐藏标记卡片」（把带风险标记的会话从列表批量隐藏，仅本地显示，再点显示回来）；卡片拆成 今日会话总数/总会话总数/今日立即体检/总立即体检/待处理/风险词；体检计数只在你点按钮时累加、按本地日期换日（沿用 localDateStr 口径），8 秒自动重扫只刷标记不计数。v0.5.1：修「检测不到数据」——对方消息改读 boss-chat 的本地归档 bc_chats（带 dir 区分我方/对方，列表页也能拿到全文，不再依赖「正开着的会话」）；页面探针读到的优先；风险词与隐藏词默认表统一（同一份底词），三套词在面板里并排展示并各注用途（风险词=体检打标 / 隐藏词=本地隐藏 / 拉黑词=站内拉黑）。v0.5.2：体检计数改口径——不是「点了多少次按钮」，而是**体检命中的关键词数**，按天切：今日立即体检=今天命中的关键词数、总立即体检=各天累计（保留 60 天）；自动重扫也会刷新今日数。v0.5.3：面板改 fixed 定位并可拖动（按住标题栏拖，位置存本机 bi_panelpos，刷新还在；视口钳制防拖出屏幕）。v0.5.5：修「面板拖不动/拖一次就消失」——钳位原来按小把手尺寸算（560px 面板能被拖到只剩 40px 在屏内，再开就像消失），现按面板实际尺寸钳位；打开时越界自愈回默认位；悬浮球本身也可拖动（按住球拖，位置存 bi_fabpos），拖动后不误触开关面板。v0.5.6（审核修复）：修「bc_chats 跨脚本读取链路根本不通」——油猴的 GM 存储按脚本隔离，boss-chat 用 GM 写、本脚本用 GM 读，读到的永远是自己那份空存储，被 try/catch 静默吞掉，导致 v0.5.1 的核心修复「对方消息改读 boss-chat 归档」完全无效、风险体检一直在扫空数据。现在改走 localStorage 镜像 bc_chats_mirror（boss-chat v1.5.8 同步写入），并在镜像不可用时明确提示，不再静默扫空数据。修「会把你自己发的话当成对方原话、进而误拉黑+误删聊天记录」——因为上一条，对方原话永远读不到，脚本退而用列表里那句「最后一条」兜底，而那句经常是你自己发的（脚本注释自己都写了这一点），于是你发过的「押金/培训费/加微信」会命中默认拉黑词，点一下就把正常 HR 拉黑并删光聊天记录（不可逆）。现在兜底文本只驱动本地隐藏，不产生拉黑依据。修「写操作零节流」——actBudgetOk()/actCoolingDown() 定义完整但全脚本零调用，每日计数照加、永不受检；现在接回 actPrecheck，并补上官方 wapi 必带的 X-Requested-With: XMLHttpRequest 与 traceid 两个请求头，另按官方错误码表给滑块验证/掉登录/CSRF 分级提示。修「按风险标记隐藏后手动恢复会被反复藏回去」——现在只藏本轮新标记的会话。v0.5.7（审核修复）：修「手动恢复的会话几秒后又被藏回去」——只藏「本轮新标记」还不够，rescanRisk 每 8 秒重算一次 riskHits，被你恢复的会话会重新变成「新标记」；现在把本页手动恢复过的会话记进 UNMARK_RISK，并给「恢复全部隐藏」加 12 秒静默窗。修「体检计数多标签页互相覆盖」——saveSettings 写盘前先读盘对 hitDays 做并集。修「处置流水只进内存、刷新就没了」——新增 bi_actlog 键落盘最近 100 条（这是唯一能事后核对「我拉黑过谁」的地方）。修「批量连续失败即停」名不副实——原来数的是累计失败，现在真的数连续（成功即清零）。修「三个批量跳过已处理的口径不一致」——batchDeleteMarked 补上「已本地隐藏的不再拉进站内写操作」。修「探针消息通道不校验来源」——任意第三方 iframe 都能 postMessage 塞伪造会话（而会话正文会驱动隐藏/拉黑判定），现在只认本窗口、同源。修「拖动面板后误触开关」——原来只对悬浮球吞掉拖动后那次 click，面板把手不吞；且触屏上 pointerup 后可能根本没有 click，那个 once 监听器会一直挂着吞掉你下一次真实点击，现在 1 秒后自动摘掉。另外诚实化：岗位打分与 AI 判定早已删除，本脚本不再往 bw_insight_out 写 risk/ai，相关文案与启动清理一并修正（监控面板上的「风险 xx」「🤖 AI 建议」两处也已在 watcher 侧删掉）。v0.5.8：把脚本开头那段说明改成与现状一致 —— v0.4.0 删掉 AI 判定、v0.5.0 删掉岗位风险打分，但开头「读监控镜像给岗位打分 / 调 AI 接口给建议」这句话一直留着，容易让人以为本脚本还在往 bw_insight_out 写结果。实际它现在只做聊天会话体检与处置。只改文字说明，行为不变。v0.5.9：新增 GM 兼容适配层 —— 脚本不再只认篡改猴：篡改猴 / 暴力猴 / 脚本猫任选其一即可，甚至在完全没有脚本管理器时（把脚本直接注入页面）也能跑；缺的能力自动补齐（存储退化为 localStorage、同源请求改走 fetch、菜单退化为页面内 ⚙、样式退化为 style 标签；跨域 AI 功能仍需管理器）。装了管理器的用户行为与上一版完全一致 —— 适配层只补齐、不覆盖。新增「🔍 环境自检（兼容层）」菜单项，一眼看清当前跑在什么环境、哪些能力可用。修「同一个页面出现两个 🩺 悬浮球」—— 防重原来是「内存变量 + document.body.contains()」，同页跑两份脚本、或页面重建/搬动过 body 时会再挂一个；现在改成 DOM 级幂等：先找 #biRoot，有就复用。
+// @version      0.5.10
+// @description  只做一件事：聊天会话体检与处置。① 读 boss-chat 写在 localStorage 的会话镜像（bc_chats_mirror，跨脚本共享那个键），用你设置的风险词扫**对方发来的消息**，命中的会话打「风险」标记；② 按标记一键处置：本地隐藏（可恢复）/ 标不感兴趣 / 拉黑 / 删除会话（后两者不可逆，只在你点击时执行，受每日上限与同会话冷却约束）。脚本自己不发任何页面请求；「岗位风险打分」在 v0.5.0 删除、「AI 跟进建议」在 v0.4.0 删除，这两项已不存在。设置：油猴菜单「⚙ 岗位体检设置」。v0.4.1：修「自己发的那句被当成对方原话」（列表那句只在没读到对方消息时兜底；详情页只收左半边的消息，右半边是我自己发的）+「同公司/同名 HR 文本歧义时挂错会话、可能误拉黑」（歧义宁可不挂）+「刷新后已标记/已删除状态全丢、跨页面失效」（处置状态落盘 bi_chat）+「按拉黑词批量拉黑会把已处理会话重复提交」（跳过已标记/已删除，口径与另两个批量一致）+ 隐藏名单与处置流水改读-改-写（多标签不互相覆盖）+ 若干本地性能小修（风险打分按镜像版本短路、消息区缓存与脏检测、面板少解析两遍镜像、后台标签不再空转）。v0.5.0：岗位风险**去掉打分**，改纯风险关键词（一行一个）；「立即体检」拿风险词扫聊天里对方发的消息，命中给会话卡打「风险」标记并计入待处理；新增「一键隐藏标记卡片」（把带风险标记的会话从列表批量隐藏，仅本地显示，再点显示回来）；卡片拆成 今日会话总数/总会话总数/今日立即体检/总立即体检/待处理/风险词；体检计数只在你点按钮时累加、按本地日期换日（沿用 localDateStr 口径），8 秒自动重扫只刷标记不计数。v0.5.1：修「检测不到数据」——对方消息改读 boss-chat 的本地归档 bc_chats（带 dir 区分我方/对方，列表页也能拿到全文，不再依赖「正开着的会话」）；页面探针读到的优先；风险词与隐藏词默认表统一（同一份底词），三套词在面板里并排展示并各注用途（风险词=体检打标 / 隐藏词=本地隐藏 / 拉黑词=站内拉黑）。v0.5.2：体检计数改口径——不是「点了多少次按钮」，而是**体检命中的关键词数**，按天切：今日立即体检=今天命中的关键词数、总立即体检=各天累计（保留 60 天）；自动重扫也会刷新今日数。v0.5.3：面板改 fixed 定位并可拖动（按住标题栏拖，位置存本机 bi_panelpos，刷新还在；视口钳制防拖出屏幕）。v0.5.5：修「面板拖不动/拖一次就消失」——钳位原来按小把手尺寸算（560px 面板能被拖到只剩 40px 在屏内，再开就像消失），现按面板实际尺寸钳位；打开时越界自愈回默认位；悬浮球本身也可拖动（按住球拖，位置存 bi_fabpos），拖动后不误触开关面板。v0.5.6（审核修复）：修「bc_chats 跨脚本读取链路根本不通」——油猴的 GM 存储按脚本隔离，boss-chat 用 GM 写、本脚本用 GM 读，读到的永远是自己那份空存储，被 try/catch 静默吞掉，导致 v0.5.1 的核心修复「对方消息改读 boss-chat 归档」完全无效、风险体检一直在扫空数据。现在改走 localStorage 镜像 bc_chats_mirror（boss-chat v1.5.8 同步写入），并在镜像不可用时明确提示，不再静默扫空数据。修「会把你自己发的话当成对方原话、进而误拉黑+误删聊天记录」——因为上一条，对方原话永远读不到，脚本退而用列表里那句「最后一条」兜底，而那句经常是你自己发的（脚本注释自己都写了这一点），于是你发过的「押金/培训费/加微信」会命中默认拉黑词，点一下就把正常 HR 拉黑并删光聊天记录（不可逆）。现在兜底文本只驱动本地隐藏，不产生拉黑依据。修「写操作零节流」——actBudgetOk()/actCoolingDown() 定义完整但全脚本零调用，每日计数照加、永不受检；现在接回 actPrecheck，并补上官方 wapi 必带的 X-Requested-With: XMLHttpRequest 与 traceid 两个请求头，另按官方错误码表给滑块验证/掉登录/CSRF 分级提示。修「按风险标记隐藏后手动恢复会被反复藏回去」——现在只藏本轮新标记的会话。v0.5.7（审核修复）：修「手动恢复的会话几秒后又被藏回去」——只藏「本轮新标记」还不够，rescanRisk 每 8 秒重算一次 riskHits，被你恢复的会话会重新变成「新标记」；现在把本页手动恢复过的会话记进 UNMARK_RISK，并给「恢复全部隐藏」加 12 秒静默窗。修「体检计数多标签页互相覆盖」——saveSettings 写盘前先读盘对 hitDays 做并集。修「处置流水只进内存、刷新就没了」——新增 bi_actlog 键落盘最近 100 条（这是唯一能事后核对「我拉黑过谁」的地方）。修「批量连续失败即停」名不副实——原来数的是累计失败，现在真的数连续（成功即清零）。修「三个批量跳过已处理的口径不一致」——batchDeleteMarked 补上「已本地隐藏的不再拉进站内写操作」。修「探针消息通道不校验来源」——任意第三方 iframe 都能 postMessage 塞伪造会话（而会话正文会驱动隐藏/拉黑判定），现在只认本窗口、同源。修「拖动面板后误触开关」——原来只对悬浮球吞掉拖动后那次 click，面板把手不吞；且触屏上 pointerup 后可能根本没有 click，那个 once 监听器会一直挂着吞掉你下一次真实点击，现在 1 秒后自动摘掉。另外诚实化：岗位打分与 AI 判定早已删除，本脚本不再往 bw_insight_out 写 risk/ai，相关文案与启动清理一并修正（监控面板上的「风险 xx」「🤖 AI 建议」两处也已在 watcher 侧删掉）。v0.5.8：把脚本开头那段说明改成与现状一致 —— v0.4.0 删掉 AI 判定、v0.5.0 删掉岗位风险打分，但开头「读监控镜像给岗位打分 / 调 AI 接口给建议」这句话一直留着，容易让人以为本脚本还在往 bw_insight_out 写结果。实际它现在只做聊天会话体检与处置。只改文字说明，行为不变。v0.5.9：新增 GM 兼容适配层 —— 脚本不再只认篡改猴：篡改猴 / 暴力猴 / 脚本猫任选其一即可，甚至在完全没有脚本管理器时（把脚本直接注入页面）也能跑；缺的能力自动补齐（存储退化为 localStorage、同源请求改走 fetch、菜单退化为页面内 ⚙、样式退化为 style 标签；跨域 AI 功能仍需管理器）。装了管理器的用户行为与上一版完全一致 —— 适配层只补齐、不覆盖。新增「🔍 环境自检（兼容层）」菜单项，一眼看清当前跑在什么环境、哪些能力可用。修「同一个页面出现两个 🩺 悬浮球」—— 防重原来是「内存变量 + document.body.contains()」，同页跑两份脚本、或页面重建/搬动过 body 时会再挂一个；现在改成 DOM 级幂等：先找 #biRoot，有就复用。 v0.5.10（文案统一·测试版）：面板标题与菜单里的「岗位体检」改成「聊天体检」（脚本实际只扫聊天会话）；「隐藏词」统一叫「风险词」（与上面那份词表同名），按钮改成「按风险词本地隐藏 / 按拉黑词拉黑」；处置区补一条「本地隐藏 vs 站内操作」的备注与用例。
 // @author       weishiji668
 // @license      MIT
 // @homepageURL  https://github.com/weishiji668/jiajianchengchu-boss
@@ -222,7 +222,7 @@ var __bossCompat = (function () {
 //   不是为了回写 —— 监控面板上「风险 xx」「🤖 AI 建议」两处不会再显示任何内容（也已在 watcher 侧删掉）。
 //   监控面板直接读 out 里的结果展示（风险角标 / 🤖 建议）。
 
-const VERSION='0.5.9';
+const VERSION='0.5.10';
 const K_SET='bi_settings';
 const K_CHAT='bi_chat', K_HIDDEN='bi_hidden', K_ACT='bi_actions', K_RISKHID='bi_riskhidden';
 const K_ACT_LOG='bi_actlog';   // v0.5.7：处置流水落盘（刷新后还能核对「我拉黑过谁」）   // v0.5.4：本功能藏过的会话名单   // v0.3.0：聊天会话镜像 / 本地隐藏 / 处置流水
@@ -907,10 +907,10 @@ function runChatQueue(list,fn,gapMs,label){
 function batchHideByRules(){
   // v0.5.6：口径与另两个批量、「待处理」列表统一（原来不跳已标记/已删除，确认框数字对不上）
   const hits=chatSessionList().filter(s=>!isHiddenChat(s.sid)&&!s.markedAt&&!s.deletedAt&&s.hitHide&&s.hitHide.length);
-  if(!hits.length){ alert('没有命中「隐藏词」规则的会话'); return; }
-  if(!confirm('把命中「隐藏词」规则的 '+hits.length+' 个会话本地隐藏？\n\n纯本地、不发任何请求，随时可恢复。')) return;
+  if(!hits.length){ alert('没有命中「风险词」的会话'); return; }
+  if(!confirm('把命中「风险词」的 '+hits.length+' 个会话本地隐藏？\n\n纯本地、不发任何请求，随时可恢复。')) return;
   mergeHidden(c=>{ hits.forEach(s=>{ c[s.sid]=now(); }); });
-  biMsg='按「隐藏词」规则隐藏了 '+hits.length+' 个会话';
+  biMsg='按「风险词」本地隐藏了 '+hits.length+' 个会话';
   applyPageHide(); renderPanel();
 }
 function batchBlockByRules(){
@@ -918,7 +918,7 @@ function batchBlockByRules(){
   const all=chatSessionList().filter(s=>s.fromThem&&s.hitBlock&&s.hitBlock.length&&!s.markedAt&&!s.deletedAt);
   const ready=all.filter(s=>s.securityId);
   if(!ready.length){ alert('没有可执行「拉黑」的会话'+(all.length?('（有 '+all.length+' 个命中规则但没拿到 securityId，去聊天页点「刷新会话」）'):'')); return; }
-  if(!confirm('把命中「拉黑词」规则的 '+ready.length+' 个会话**逐个拉黑并删除聊天记录**？\n\n这是站内写操作，不可恢复；每个间隔 3 秒，连续失败会自动停下。\n'+(all.length>ready.length?('另有 '+(all.length-ready.length)+' 个因缺少 securityId 会跳过。'):''))) return;
+  if(!confirm('把命中「拉黑词」的 '+ready.length+' 个会话**逐个拉黑并删除聊天记录**？\n\n这是站内写操作，不可恢复；每个间隔 3 秒，连续失败会自动停下。\n'+(all.length>ready.length?('另有 '+(all.length-ready.length)+' 个因缺少 securityId 会跳过。'):''))) return;
   runChatQueue(ready.map(s=>s.sid),(sid,cb)=>{
     const s=(CHAT.sessions||{})[sid];
     postChatAction('/wapi/zprelation/userBlack/add',{securityId:s.securityId,needRemoveFriend:1},sid,'拉黑+删记录',ok=>{ if(ok) markSession(sid,'拉黑'); cb(ok); });
@@ -1055,7 +1055,7 @@ function buildUI(){
   const root=document.createElement('div');
   root.id='biRoot';
   root.innerHTML='<button id="biFab" title="聊天体检 / 一键处置（在聊天页用）">🩺</button>'+
-    '<div id="biPanel"><div class="bip-head"><span class="bip-dot" id="biDot"></span><b>岗位体检</b>'+
+    '<div id="biPanel"><div class="bip-head"><span class="bip-dot" id="biDot"></span><b>聊天体检</b>'+
     '<span class="bip-mute">v'+VERSION+' · 会话读取只读 · 处置按你点击 · 数据仅存本机</span>'+
     '<button class="bip-x" data-bi="close" title="收起">×</button></div>'+
     '<div class="bip-body" id="biBody"></div></div>';
@@ -1158,7 +1158,7 @@ function saveChatRulesFromPanel(){
   if(!bl) return;
   S.rulesChat=Object.assign({},S.rulesChat,{block:cleanRuleLines(bl.value)});
   saveSettings(); scanChat();
-  biMsg='处置规则已保存（隐藏词=风险词 '+chatRuleWords('hide').length+' 个 · 拉黑 '+chatRuleWords('block').length+' 条）';
+  biMsg='处置规则已保存（风险词 '+chatRuleWords('hide').length+' 个 · 拉黑词 '+chatRuleWords('block').length+' 条）';
   renderPanel();
 }
 // v0.3.0：会话列表（带一键处置按钮）；v0.4.0：onlyPending=true 时只列「命中规则且还没处置」的
@@ -1176,7 +1176,7 @@ function chatListHtml(onlyPending){
     const hid=isHiddenChat(s.sid);
     const tags=[];
     if(s.hitBlock&&s.hitBlock.length) tags.push('<span class="bip-tag warn">拉黑词·'+esc(s.hitBlock.slice(0,2).join('/'))+'</span>');
-    if(s.hitHide&&s.hitHide.length) tags.push('<span class="bip-tag">隐藏词·'+esc(s.hitHide.slice(0,2).join('/'))+'</span>');
+    if(s.hitHide&&s.hitHide.length) tags.push('<span class="bip-tag">风险词·'+esc(s.hitHide.slice(0,2).join('/'))+'</span>');
     if(s.riskHits&&s.riskHits.length) tags.push('<span class="bip-tag warn">风险·'+esc(s.riskHits.slice(0,2).join('/'))+'</span>');
     if(hid) tags.push('<span class="bip-tag">已隐藏</span>');
     if(s.markedAt&&!s.deletedAt) tags.push('<span class="bip-tag">已标记</span>');
@@ -1230,15 +1230,16 @@ function renderPanel(){
   // ===== v0.3.0：聊天体检 / 一键处置 =====
   const cc=cchat;   // 783 行已算过，本次渲染内 CHAT/HIDDEN 未变
   const onChatPage=/\/chat|\/message/i.test(location.pathname);
-  html+='<details class="bip-fold" open><summary>聊天体检 / 一键处置<span class="bip-mute">会话 '+cc.sessions+' · 命中隐藏 '+cc.hitHide+' · 命中拉黑 '+cc.hitBlock+' · 本地隐藏 '+cc.hidden+'</span></summary><div class="bip-foldbody">'+
-    '<div class="bip-mute" style="font-size:11px">看的是<b>对方发来的最后一句</b>（在聊天页只读页面状态，不发请求）。命中「隐藏词」→ 建议本地隐藏；命中「拉黑词」→ 建议拉黑。规则只做判断，不替你动手。</div>'+
+  html+='<details class="bip-fold" open><summary>聊天体检 / 一键处置<span class="bip-mute">会话 '+cc.sessions+' · 命中风险词 '+cc.hitHide+' · 命中拉黑词 '+cc.hitBlock+' · 本地隐藏 '+cc.hidden+'</span></summary><div class="bip-foldbody">'+
+    '<div class="bip-mute" style="font-size:11px">看的是<b>对方发来的最后一句</b>（在聊天页只读页面状态，不发请求）。命中「风险词」→ 建议本地隐藏；命中「拉黑词」→ 建议拉黑。规则只做判断，不替你动手。</div>'+
+    '<div class="bip-mute" style="font-size:11px"><b>隐藏</b>＝只在你浏览器里藏起来（本地、不发请求、随时可恢复）；<b>不感兴趣 / 拉黑 / 删</b>＝站内操作（不可逆，会真影响账号数据）。用例：本地隐藏会话不动站内数据；拉黑会让对方无法再给你发消息。</div>'+
     '<div class="bip-row"><button class="bip-btn primary" data-bi="chat-refresh">刷新会话</button>'+
     '<a class="bip-btn" href="https://www.zhipin.com/web/geek/chat" target="_blank" rel="noreferrer" style="text-decoration:none">打开聊天页</a>'+
     '<span class="bip-mute">'+(CHAT.at?('上次读到 '+new Date(CHAT.at).toLocaleTimeString('zh-CN',{hour12:false})+' · 带令牌 '+cc.withSec+'/'+cc.sessions):'还没读到会话')+'</span></div>'+
     (onChatPage?'':'<div class="bip-mute" style="font-size:11px">当前不在聊天页：点上面的「打开聊天页」，在那个页面里点「刷新会话」（会话列表和令牌都只有聊天页才有）。</div>')+
     ((onChatPage&&!cc.sessions)?'<div class="bip-mute" style="font-size:11px">探针在聊天页没读到会话：先点一次「刷新会话」；如果一直是 0，说明站点把会话列表挪到别处了——把这句话告诉我，我来适配。</div>':'')+
-    '<div class="bip-row"><button class="bip-btn" data-bi="chat-batch-hide">按「隐藏词」规则隐藏</button>'+
-    '<button class="bip-btn danger" data-bi="chat-batch-block">按「拉黑词」规则拉黑</button>'+
+    '<div class="bip-row"><button class="bip-btn" data-bi="chat-batch-hide">按风险词本地隐藏</button>'+
+    '<button class="bip-btn danger" data-bi="chat-batch-block">按拉黑词拉黑</button>'+
     '<button class="bip-btn" data-bi="chat-batch-del">删除已标记的聊天</button>'+
     '<button class="bip-btn" data-bi="chat-unhide-all">恢复全部隐藏</button></div>'+
     (chatQueue.running?('<div class="bip-note">⏳ '+esc(chatQueue.label)+'：'+chatQueue.done+' / '+chatQueue.total+'（成功 '+chatQueue.ok+' · 失败 '+chatQueue.fail+'）</div>'):'')+
@@ -1247,7 +1248,7 @@ function renderPanel(){
     '<div class="bip-h">全部会话<span class="bip-mute">共 '+cc.sessions+' 个 · 已处理 '+cc.handled+' 个 · 本地隐藏 '+cc.hidden+' 个</span></div>'+
     chatListHtml(false)+
     '<div class="bip-h">聊天处置词（两套 · 一行一条）</div>'+
-    '<div class="bip-mute" style="font-size:11px">隐藏词 = 风险词（同一份词表，在上方「岗位风险词」里改）；命中给会话卡打标，可「一键隐藏标记卡片」或按「隐藏词」批量本地隐藏</div>'+
+    '<div class="bip-mute" style="font-size:11px">风险词就是上面那一份（一处改、两处生效）；命中给会话卡打「风险」角标，可「一键隐藏标记卡片」或按风险词批量本地隐藏</div>'+
     '<div class="bip-mute" style="font-size:11px">拉黑词（→ 拉黑）</div><textarea id="biRuleBlock" style="height:72px">'+esc(chatRuleText('block'))+'</textarea>'+
     '<div class="bip-row"><button class="bip-btn" data-bi="chat-rules-save">保存规则</button>'+
     '<button class="bip-btn" data-bi="chat-rules-default">恢复默认词</button>'+
@@ -1310,7 +1311,7 @@ function registerMenu(){
   if(typeof GM_registerMenuCommand!=='function') return;
   // v0.2.0：菜单 → 打开面板并定位到对应折叠区（原来直接 prompt，点完像没反应）
   const open=(fold)=>{ try{ openPanel(fold); }catch(e){ if(fold==='rules') askRules(); else showStatus(); } };
-  GM_registerMenuCommand('⚙ 岗位体检设置（风险规则）',()=>open('rules'));
+  GM_registerMenuCommand('⚙ 聊天体检设置（风险词）',()=>open('rules'));
   GM_registerMenuCommand('🧹 聊天体检 / 一键处置（在聊天页用）',()=>open('chat'));
   GM_registerMenuCommand('ℹ️ 状态',()=>open('status'));
 }

@@ -115,7 +115,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
     console.log('油猴菜单（4 项，点了要有反应）');
     const menus = await page.evaluate(()=>(window.__menus||[]).map(m=>m.name));
-    check('脚本自有的 3 个菜单命令都在（规则 / 聊天体检 / 状态），外加兼容层的环境自检项', (menus.length>=4 && [/环境自检/,/岗位体检设置/,/聊天体检/,/状态/].every(function(re){return menus.some(function(n){return re.test(n);});})), JSON.stringify(menus));
+    check('脚本自有的 3 个菜单命令都在（聊天体检设置 / 聊天体检 / 状态），外加兼容层的环境自检项', (menus.length>=4 && [/环境自检/,/聊天体检设置/,/聊天体检/,/状态/].every(function(re){return menus.some(function(n){return re.test(n);});})), JSON.stringify(menus));
     await page.evaluate(()=>{ document.getElementById('biPanel').style.display='none'; (window.__menus||[]).find(function(m){return /聊天体检/.test(m.name);}).fn(); });
     await page.waitForTimeout(400);
     const menuOpen = await page.evaluate(()=>{
@@ -124,10 +124,10 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
       return {shown:p.style.display==='block', aiOpen:folds[1].open, rulesOpen:folds[0].open};
     });
     check('点菜单「聊天体检」→ 面板打开（折叠区定位不强制）', menuOpen.shown===true, JSON.stringify(menuOpen));
-    await page.evaluate(()=>{ document.getElementById('biPanel').style.display='none'; (window.__menus||[]).find(function(m){return /岗位体检设置/.test(m.name);}).fn(); });
+    await page.evaluate(()=>{ document.getElementById('biPanel').style.display='none'; (window.__menus||[]).find(function(m){return /聊天体检设置/.test(m.name);}).fn(); });
     await page.waitForTimeout(300);
     const menuRules = await page.evaluate(()=>{ const folds=document.querySelectorAll('#biPanel details.bip-fold'); return {rulesOpen:folds[0].open}; });
-    check('点菜单「岗位体检设置」→ 定位到风险规则折叠区', menuRules.rulesOpen===true, JSON.stringify(menuRules));
+    check('点菜单「聊天体检设置」→ 定位到风险词折叠区', menuRules.rulesOpen===true, JSON.stringify(menuRules));
 
     check('无运行时错误', errors.length===0, errors.join(' | '));
   } finally {

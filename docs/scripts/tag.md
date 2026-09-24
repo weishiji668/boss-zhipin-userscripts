@@ -5,7 +5,7 @@
 | | |
 | --- | --- |
 | 文件 | `boss-tag.user.js` |
-| 版本 | v1.2.5 |
+| 版本 | v1.2.6 |
 | 生效页面 | https://www.zhipin.com/*、https://*.zhipin.com/* |
 | 运行时机 | document-idle（@noframes：不在 iframe 里重复注入） |
 

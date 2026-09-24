@@ -186,7 +186,7 @@ const PAGE_HTML = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>BOSS 
       text: document.getElementById('biBody').textContent
     }));
     check('探针读到 3 个会话', afterProbe.sessions===3, 'sessions='+afterProbe.sessions);
-    check('面板列出会话并标注命中', /甲公司/.test(afterProbe.text) && /拉黑词/.test(afterProbe.text) && /隐藏词/.test(afterProbe.text), afterProbe.text.slice(0,200));
+    check('面板列出会话并标注命中', /甲公司/.test(afterProbe.text) && /拉黑词/.test(afterProbe.text) && /风险词/.test(afterProbe.text), afterProbe.text.slice(0,200));
 
     console.log('详情页「对方消息」识别（按头像）');
     await page.evaluate(()=>window.__installFakeDetail());

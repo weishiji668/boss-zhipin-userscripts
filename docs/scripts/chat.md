@@ -5,7 +5,7 @@
 | | |
 | --- | --- |
 | 文件 | `boss-chat.user.js` |
-| 版本 | v1.5.11 |
+| 版本 | v1.5.12 |
 | 生效页面 | https://www.zhipin.com/web/geek/chat*、https://www.zhipin.com/web/geek/message* |
 | 运行时机 | document-start（@noframes：不在 iframe 里重复注入） |
 

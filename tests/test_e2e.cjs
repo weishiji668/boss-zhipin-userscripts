@@ -175,7 +175,7 @@ function routeStub(ctx){
     const b=document.querySelector('[data-act=montab][data-id=signals]'); if(b) b.click();
     return document.getElementById('bwPage_mon').textContent;
   });
-  check('薪资下调 → 进入待跟进', sigText.includes('待跟进') && sigText.includes('薪资（下调）'), '');
+  check('薪资下调 → 进入待处理', sigText.includes('待处理') && sigText.includes('薪资（下调）'), '');
   check('要求拔高 → 经验 1-3年→3-5年、学历 大专→本科', sigText.includes('要求拔高') && sigText.includes('3-5年') && sigText.includes('本科'));
   const sigEntry = await page.evaluate(()=>{
     return (window.__gm.bw_changelog||[]).filter(x=>x.jobId==='job1').map(x=>({field:x.field,level:x.level,text:x.text}));
